@@ -1,0 +1,31 @@
+id,name,category
+1,JavaScript Developer,Development
+2,Python Developer,Development
+3,React Developer,Development
+4,Node.js Developer,Development
+5,UI Designer,Design
+6,UX Designer,Design
+7,Graphic Designer,Design
+8,Logo Designer,Design
+9,Content Writer,Writing
+10,Copywriter,Writing
+11,Technical Writer,Writing
+12,SEO Writer,Writing
+13,Digital Marketer,Marketing
+14,Social Media Manager,Marketing
+15,SEO Specialist,Marketing
+16,PPC Expert,Marketing
+17,Data Analyst,Analytics
+18,Business Analyst,Analytics
+19,Financial Analyst,Analytics
+20,Market Research Analyst,Analytics
+21,Video Editor,Multimedia
+22,Motion Designer,Multimedia
+23,Audio Engineer,Multimedia
+24,Photographer,Multimedia
+25,Virtual Assistant,Administrative
+26,Project Manager,Administrative
+27,Data Entry Specialist,Administrative
+28,Customer Service Rep,Administrative
+29,Mobile App Developer,Development
+30,WordPress Developer,Development 

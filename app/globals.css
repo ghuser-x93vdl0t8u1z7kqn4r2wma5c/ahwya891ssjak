@@ -1,0 +1,110 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Yatra+One&display=swap');
+
+:root {
+  /* Font Colors */
+  --color-heading: #2D2E2E;  /* Black-fonts, headings */
+  --color-text: #5E5E5E;    /* Black-fonts, texts */
+  
+  /* Green Variants */
+  --color-green-hover: #4F5D4E;    /* Dark Green Hover */
+  --color-green-button: #3A4F39;   /* Dark green button */
+  --color-green-dark: #071E00;     /* Dark green-dark */
+  --color-green-light-bg: #EFF6F3; /* Light green - bg */
+  
+  /* Purple Variants */
+  --color-purple-attention: #8F65C7; /* Purple for attention */
+  --color-purple: #6C59D5;          /* Purple */
+  
+  /* Gray Variants */
+  --color-gray-input-text: #868686; /* Grey input text */
+  --color-gray-input-bg: #F6F6F6;   /* Light gray input fields */
+  
+  /* Other Colors */
+  --color-background: #FFFFFF;      /* Background white */
+  --color-yellow-bg: #FFE9A2;      /* Yellow bg */
+  --color-red: #D0021B;            /* Red */
+}
+
+@layer base {
+  body {
+    background: var(--color-background);
+    color: var(--color-text);
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+
+  .yatra-one-text {
+    font-family: 'Yatra One', cursive;
+  }
+}
+
+@layer utilities {
+  /* Font Colors */
+  .text-heading {
+    color: var(--color-heading);
+  }
+  
+  .text-body {
+    color: var(--color-text);
+  }
+  
+  /* Green Variants */
+  .bg-green-hover {
+    background-color: var(--color-green-hover);
+  }
+  
+  .text-green-hover {
+    color: var(--color-green-hover);
+  }
+  
+  .bg-green-button {
+    background-color: var(--color-green-button);
+  }
+  
+  .bg-green-dark {
+    background-color: var(--color-green-dark);
+  }
+  
+  .bg-green-light {
+    background-color: var(--color-green-light-bg);
+  }
+  
+  /* Purple Variants */
+  .text-purple-attention {
+    color: var(--color-purple-attention);
+  }
+  
+  .bg-purple-attention {
+    background-color: var(--color-purple-attention);
+  }
+  
+  .text-purple {
+    color: var(--color-purple);
+  }
+  
+  .bg-purple {
+    background-color: var(--color-purple);
+  }
+  
+  /* Gray Variants */
+  .text-gray-input {
+    color: var(--color-gray-input-text);
+  }
+  
+  .bg-gray-input {
+    background-color: var(--color-gray-input-bg);
+  }
+  
+  /* Other Colors */
+  .bg-yellow {
+    background-color: var(--color-yellow-bg);
+  }
+  
+  .text-red {
+    color: var(--color-red);
+  }
+  
+  .bg-red {
+    background-color: var(--color-red);
+  }
+}

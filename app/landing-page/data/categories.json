@@ -1,0 +1,60 @@
+{
+  "categories": [
+    {
+      "id": "dev-it",
+      "title": "Development & IT",
+      "rating": 4.85,
+      "skillCount": 1853,
+      "slug": "development-it"
+    },
+    {
+      "id": "design",
+      "title": "Graphic Design & Creative Stuff",
+      "rating": 4.91,
+      "skillCount": 968,
+      "slug": "graphic-design-creative"
+    },
+    {
+      "id": "sales",
+      "title": "Sales & Marketing",
+      "rating": 4.77,
+      "skillCount": 392,
+      "slug": "sales-marketing"
+    },
+    {
+      "id": "writing",
+      "title": "Copy Writing & Translation",
+      "rating": 4.92,
+      "skillCount": 505,
+      "slug": "writing-translation"
+    },
+    {
+      "id": "admin",
+      "title": "Admin & Customer Support",
+      "rating": 4.65,
+      "skillCount": 145,
+      "slug": "admin-support"
+    },
+    {
+      "id": "finance",
+      "title": "Finance & Accounting",
+      "rating": 4.77,
+      "skillCount": 508,
+      "slug": "finance-accounting"
+    },
+    {
+      "id": "engineering",
+      "title": "Engineer & Architecture",
+      "rating": 4.13,
+      "skillCount": 214,
+      "slug": "engineering-architecture"
+    },
+    {
+      "id": "legal",
+      "title": "Legal",
+      "rating": 4.85,
+      "skillCount": 756,
+      "slug": "legal"
+    }
+  ]
+} 

@@ -1,0 +1,11 @@
+id,email,account_type,username,profile_picture_url,skills,created_at
+1,john.dev@example.com,freelancer,johndev,/profiles/john.jpg,"[{""name"": ""JavaScript"", ""level"": ""Expert"", ""years"": 5}, {""name"": ""React"", ""level"": ""Advanced"", ""years"": 3}]",2024-03-15T08:30:00Z
+2,sarah.design@example.com,freelancer,sarahd,/profiles/sarah.jpg,"[{""name"": ""UI Design"", ""level"": ""Expert"", ""years"": 6}, {""name"": ""UX Design"", ""level"": ""Expert"", ""years"": 6}]",2024-03-15T09:15:00Z
+3,tech.company@example.com,client,techcorp,/profiles/techcorp.jpg,"[]",2024-03-15T10:00:00Z
+4,creative.agency@example.com,client,creative_hub,/profiles/creative.jpg,2024-03-15T10:45:00Z
+5,mike.code@example.com,freelancer,mikecoder,/profiles/mike.jpg,"[{""name"": ""Python"", ""level"": ""Expert"", ""years"": 7}, {""name"": ""JavaScript"", ""level"": ""Advanced"", ""years"": 4}]",2024-03-15T11:30:00Z
+6,design.studio@example.com,client,designpro,/profiles/design.jpg,2024-03-15T12:15:00Z
+7,anna.writer@example.com,freelancer,annawrite,/profiles/anna.jpg,"[{""name"": ""Content Writing"", ""level"": ""Expert"", ""years"": 8}, {""name"": ""SEO"", ""level"": ""Intermediate"", ""years"": 3}]",2024-03-15T13:00:00Z
+8,marketing.co@example.com,client,marketpro,/profiles/marketing.jpg,2024-03-15T13:45:00Z
+9,david.analyst@example.com,freelancer,datadev,/profiles/david.jpg,2024-03-15T14:30:00Z
+10,startup.inc@example.com,client,startupx,/profiles/startup.jpg,2024-03-15T15:15:00Z 

@@ -1,0 +1,16 @@
+id,user_id,skill_name,proficiency_level,years_experience
+1,1,JavaScript Development,Expert,5
+2,1,React Development,Advanced,3
+3,1,Node.js Development,Intermediate,2
+4,2,UI Design,Expert,6
+5,2,UX Design,Expert,6
+6,2,Graphic Design,Advanced,4
+7,5,Python Development,Expert,7
+8,5,JavaScript Development,Advanced,4
+9,5,React Development,Advanced,3
+10,7,Content Writing,Expert,8
+11,7,Copywriting,Advanced,6
+12,7,SEO Writing,Intermediate,3
+13,9,Data Analysis,Expert,10
+14,9,Business Analysis,Advanced,7
+15,9,Python Development,Advanced,5 
