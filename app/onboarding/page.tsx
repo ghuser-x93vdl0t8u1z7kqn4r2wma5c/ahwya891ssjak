@@ -50,6 +50,7 @@ export default function OnboardingPage() {
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      console.log('Current session:', session);
       if (!session) {
         router.push('/login');
         return;
@@ -145,22 +146,51 @@ export default function OnboardingPage() {
         throw new Error('Please select at least one skill');
       }
 
-      // Update user profile
-      const { error: updateError } = await supabase
+      // First, try to get the existing user record
+      const { data: existingUser, error: fetchError } = await supabase
         .from('users')
-        .update({
-          username: finalUsername,
-          account_type: formData.accountType,
-          skills: formData.accountType === 'freelancer' ? formData.skills : null,
-          main_skill: formData.accountType === 'freelancer' ? formData.skills[0] : null,
-        })
-        .eq('email', session.user.email);
+        .select('id')
+        .eq('id', session.user.id)
+        .single();
 
-      if (updateError) throw updateError;
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('Error checking existing user:', fetchError);
+        throw new Error('Error checking user profile');
+      }
+
+      // Prepare the user data
+      const userData = {
+        username: finalUsername,
+        account_type: formData.accountType,
+        skills: formData.accountType === 'freelancer' ? formData.skills : [],
+        main_skill: formData.accountType === 'freelancer' ? formData.skills[0] : null,
+      };
+
+      let updateError;
+      if (!existingUser) {
+        // If user doesn't exist, insert with id
+        const { error } = await supabase
+          .from('users')
+          .insert([{ id: session.user.id, ...userData }]);
+        updateError = error;
+      } else {
+        // If user exists, update
+        const { error } = await supabase
+          .from('users')
+          .update(userData)
+          .eq('id', session.user.id);
+        updateError = error;
+      }
+
+      if (updateError) {
+        console.error('Profile update error:', updateError);
+        throw new Error(updateError.message || 'Error updating profile');
+      }
 
       // Redirect to their new profile page
       router.push(`/profile/${finalUsername}`);
     } catch (err) {
+      console.error('Submission error:', err);
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setSubmitting(false);
