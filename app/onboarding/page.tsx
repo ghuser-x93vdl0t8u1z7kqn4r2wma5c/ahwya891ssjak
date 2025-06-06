@@ -3,58 +3,56 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/app/lib/supabase';
+import FreelancerProfile from './FreelancerProfile';
+import CreatorProfile from './CreatorProfile';
+import BusinessProfile from './BusinessProfile';
 
-type AccountType = 'freelancer' | 'client';
+type AccountType = 'freelancer' | 'creator' | 'business';
 
-const AVAILABLE_SKILLS = [
-  'Web Development',
-  'Mobile Development',
-  'UI/UX Design',
-  'Graphic Design',
-  'Content Writing',
-  'Digital Marketing',
-  'SEO',
-  'Data Analysis',
-  'Video Editing',
-  'Photography',
-  'Social Media Management',
-  'Copywriting',
-  'Translation',
-  'Voice Over',
-  'Animation',
-  'Illustration',
-  '3D Modeling',
-  'Game Development',
-  'Database Administration',
-  'DevOps Engineering',
-  'Cybersecurity',
-  'Machine Learning',
-  'Artificial Intelligence',
-  'Business Analysis',
-  'Project Management'
-].sort();
+interface FormData {
+  username: string;
+  display_name: string;
+  bio: string;
+  account_type: AccountType | '';
+}
+
+const initialFormData: FormData = {
+  username: '',
+  display_name: '',
+  bio: '',
+  account_type: ''
+};
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [suggestedUsername, setSuggestedUsername] = useState<string | null>(null);
-
-  const [formData, setFormData] = useState({
-    username: '',
-    accountType: '' as AccountType,
-    skills: [] as string[],
-  });
+  const [formData, setFormData] = useState<FormData>(initialFormData);
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+  const [usernameError, setUsernameError] = useState<string | null>(null);
+  const [profileData, setProfileData] = useState<any>(null);
 
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      console.log('Current session:', session);
       if (!session) {
         router.push('/login');
         return;
       }
+
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('onboarding_completed')
+        .eq('id', session.user.id)
+        .single();
+
+      if (!userError && userData?.onboarding_completed === 'true') {
+        router.push('/dashboard');
+        return;
+      }
+
       setLoading(false);
     };
 
@@ -62,65 +60,47 @@ export default function OnboardingPage() {
   }, [router]);
 
   const checkUsername = async (username: string) => {
-    const { data, error } = await supabase
-      .from('users')
-      .select('username')
-      .eq('username', username)
-      .single();
-
-    if (error && error.code === 'PGRST116') {
-      // No match found, username is available
-      return true;
+    if (!username) {
+      setUsernameError(null);
+      return;
     }
 
-    // Username exists, generate suggestion
-    let suggestion = username;
-    let counter = 1;
-    let isAvailable = false;
-
-    while (!isAvailable && counter <= 99) {
-      suggestion = `${username}${counter}`;
+    setIsCheckingUsername(true);
+    try {
       const { data, error } = await supabase
         .from('users')
         .select('username')
-        .eq('username', suggestion)
+        .eq('username', username)
         .single();
 
-      if (error && error.code === 'PGRST116') {
-        isAvailable = true;
-      } else {
-        counter++;
-      }
-    }
+      if (error && error.code !== 'PGRST116') throw error;
 
-    setSuggestedUsername(suggestion);
-    return false;
-  };
-
-  const handleUsernameChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const username = e.target.value.toLowerCase().replace(/[^a-z0-9]/g, '');
-    setFormData(prev => ({ ...prev, username }));
-    
-    if (username.length >= 3) {
-      const isAvailable = await checkUsername(username);
-      if (!isAvailable && suggestedUsername) {
-        setError(`Sorry, this username is unavailable. Recommended: ${suggestedUsername}`);
-      } else {
-        setError(null);
-        setSuggestedUsername(null);
-      }
+      setUsernameError(data ? 'This username is already taken' : null);
+    } catch (err) {
+      console.error('Error checking username:', err);
+      setUsernameError('Error checking username availability');
+    } finally {
+      setIsCheckingUsername(false);
     }
   };
 
-  const handleSkillChange = (skill: string) => {
-    setFormData(prev => {
-      const skills = prev.skills.includes(skill)
-        ? prev.skills.filter(s => s !== skill)
-        : prev.skills.length < 5
-        ? [...prev.skills, skill]
-        : prev.skills;
-      return { ...prev, skills };
-    });
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    const finalValue = name === 'username' ? value.toLowerCase() : value;
+    setFormData(prev => ({ ...prev, [name]: finalValue }));
+
+    if (name === 'username') {
+      checkUsername(finalValue);
+    }
+  };
+
+  const handleNext = (data?: any) => {
+    if (data) setProfileData(data);
+    if (currentStep < 3) setCurrentStep(currentStep + 1);
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -129,177 +109,181 @@ export default function OnboardingPage() {
     setError(null);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('No session found');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
+
+      if (profileData?.primary_skill) {
+        profileData.main_skill = profileData.primary_skill;
+        delete profileData.primary_skill;
       }
 
-      // Final username check before submission
-      const isAvailable = await checkUsername(formData.username);
-      const finalUsername = isAvailable ? formData.username : suggestedUsername;
-
-      if (!finalUsername) {
-        throw new Error('Sorry, please choose an available username');
-      }
-
-      if (formData.accountType === 'freelancer' && formData.skills.length === 0) {
-        throw new Error('Please select at least one skill');
-      }
-
-      // First, try to get the existing user record
-      const { data: existingUser, error: fetchError } = await supabase
+      const { error: updateError } = await supabase
         .from('users')
-        .select('id')
-        .eq('id', session.user.id)
-        .single();
+        .update({
+          username: formData.username,
+          display_name: formData.display_name,
+          bio: formData.bio,
+          account_type: formData.account_type,
+          onboarding_completed: 'true',
+          ...profileData
+        })
+        .eq('id', user.id);
 
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        console.error('Error checking existing user:', fetchError);
-        throw new Error('Error checking user profile');
-      }
-
-      // Prepare the user data
-      const userData = {
-        username: finalUsername,
-        account_type: formData.accountType,
-        skills: formData.accountType === 'freelancer' ? formData.skills : [],
-        main_skill: formData.accountType === 'freelancer' ? formData.skills[0] : null,
-      };
-
-      let updateError;
-      if (!existingUser) {
-        // If user doesn't exist, insert with id
-        const { error } = await supabase
-          .from('users')
-          .insert([{ id: session.user.id, ...userData }]);
-        updateError = error;
-      } else {
-        // If user exists, update
-        const { error } = await supabase
-          .from('users')
-          .update(userData)
-          .eq('id', session.user.id);
-        updateError = error;
-      }
-
-      if (updateError) {
-        console.error('Profile update error:', updateError);
-        throw new Error(updateError.message || 'Error updating profile');
-      }
-
-      // Redirect to their new profile page
-      router.push(`/profile/${finalUsername}`);
-    } catch (err) {
-      console.error('Submission error:', err);
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      if (updateError) throw updateError;
+      router.push('/dashboard');
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setSubmitting(false);
     }
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple"></div>
+      </div>
+    );
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4 max-w-md">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">Complete Your Profile</h1>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
+  const renderStep = () => {
+    switch (currentStep) {
+      case 1:
+        return (
+          <div className="space-y-6">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                Username
-              </label>
-              <div className="mt-1">
+              <h2 className="text-2xl font-semibold text-heading">Welcome to Lahara!</h2>
+              <p className="mt-1 text-sm text-body">Let's set up your profile</p>
+            </div>
+
+            <form className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-body">Username</label>
+                <div className="mt-1 relative">
+                  <input
+                    type="text"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleInputChange}
+                    required
+                    className={`block w-full rounded-full px-4 py-2 border ${usernameError ? 'border-red' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-purple bg-gray-input text-gray-input`}
+                    placeholder="Enter your username"
+                  />
+                  {isCheckingUsername && (
+                    <div className="absolute right-3 top-2.5 animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-purple"></div>
+                  )}
+                </div>
+                {usernameError && <p className="mt-1 text-sm text-red">{usernameError}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-body">Display Name</label>
                 <input
                   type="text"
-                  id="username"
-                  value={formData.username}
-                  onChange={handleUsernameChange}
-                  className="shadow-sm focus:ring-purple-500 focus:border-purple-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                  placeholder="Choose a username"
+                  name="display_name"
+                  value={formData.display_name}
+                  onChange={handleInputChange}
                   required
-                  minLength={3}
-                  pattern="[a-z0-9]+"
+                  className="mt-1 block w-full rounded-full px-4 py-2 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple bg-gray-input text-gray-input"
+                  placeholder="Enter your display name"
                 />
               </div>
-              {error && (
-                <p className="mt-1 text-sm text-red-600">
-                  {error}
-                  {suggestedUsername && (
-                    <span
-                      onClick={() => {
-                        setFormData(prev => ({ ...prev, username: suggestedUsername }));
-                        setError(null);
-                        setSuggestedUsername(null);
-                      }}
-                      className="ml-2 text-purple-600 hover:text-purple-500 cursor-pointer underline"
-                    >
-                      {suggestedUsername}
-                    </span>
-                  )}
-                </p>
-              )}
-            </div>
 
-            <div>
-              <label htmlFor="accountType" className="block text-sm font-medium text-gray-700">
-                I am a
-              </label>
-              <select
-                id="accountType"
-                value={formData.accountType}
-                onChange={(e) => setFormData(prev => ({ ...prev, accountType: e.target.value as AccountType }))}
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-purple-500 focus:border-purple-500 sm:text-sm rounded-md"
-                required
-              >
-                <option value="">Select account type</option>
-                <option value="freelancer">Freelancer</option>
-                <option value="client">Client</option>
-              </select>
-            </div>
-
-            {formData.accountType === 'freelancer' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700">
-                  Skills (select up to 5)
-                </label>
-                <p className="mt-1 text-sm text-gray-500">
-                  Selected: {formData.skills.length}/5
-                </p>
-                <div className="mt-2 grid grid-cols-2 gap-2">
-                  {AVAILABLE_SKILLS.map((skill) => (
-                    <div key={skill} className="relative flex items-start">
-                      <div className="flex items-center h-5">
-                        <input
-                          type="checkbox"
-                          checked={formData.skills.includes(skill)}
-                          onChange={() => handleSkillChange(skill)}
-                          disabled={!formData.skills.includes(skill) && formData.skills.length >= 5}
-                          className="focus:ring-purple-500 h-4 w-4 text-purple-600 border-gray-300 rounded"
-                        />
-                      </div>
-                      <div className="ml-3 text-sm">
-                        <label className="text-gray-700">{skill}</label>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <label className="block text-sm font-medium text-body">Bio</label>
+                <textarea
+                  name="bio"
+                  value={formData.bio}
+                  onChange={handleInputChange}
+                  required
+                  rows={3}
+                  className="mt-1 block w-full rounded-lg px-4 py-2 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple bg-gray-input text-gray-input resize-none"
+                  placeholder="Tell us about yourself"
+                />
               </div>
-            )}
 
-            <button
-              type="submit"
-              disabled={submitting || !!error}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:bg-gray-400"
-            >
-              {submitting ? 'Creating Profile...' : 'Complete Profile'}
-            </button>
+              <div>
+                <label className="block text-sm font-medium text-body">I am a...</label>
+                <select
+                  name="account_type"
+                  value={formData.account_type}
+                  onChange={handleInputChange}
+                  required
+                  className="mt-1 block w-full rounded-full px-4 py-2 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple bg-gray-input text-gray-input"
+                >
+                  <option value="">Select account type</option>
+                  <option value="freelancer">Freelancer</option>
+                  <option value="creator">Creator</option>
+                  <option value="business">Business</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end pt-4">
+                <button
+                  type="button"
+                  onClick={() => handleNext()}
+                  disabled={
+                    !formData.username ||
+                    !!usernameError ||
+                    !formData.account_type ||
+                    !formData.display_name ||
+                    !formData.bio
+                  }
+                  className="px-6 py-3 text-sm font-medium text-white bg-purple hover:bg-purple-attention rounded-full focus:outline-none focus:ring-2 focus:ring-purple disabled:bg-gray-input disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </div>
+            </form>
+          </div>
+        );
+
+      case 2:
+        switch (formData.account_type) {
+          case 'freelancer':
+            return <FreelancerProfile onNext={handleNext} onBack={handleBack} />;
+          case 'creator':
+            return <CreatorProfile onNext={handleNext} onBack={handleBack} />;
+          case 'business':
+            return <BusinessProfile onNext={handleNext} onBack={handleBack} />;
+          default:
+            return null;
+        }
+
+      case 3:
+        return (
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <h2 className="text-2xl font-semibold text-heading">Almost there!</h2>
+              <p className="mt-1 text-sm text-body">Review and confirm your profile details</p>
+            </div>
+
+            <div className="bg-gray-input shadow rounded-lg p-6 space-y-4">
+              <h3 className="text-lg font-medium text-heading">Profile Summary</h3>
+              <p><strong>Username:</strong> {formData.username}</p>
+              <p><strong>Display Name:</strong> {formData.display_name}</p>
+              <p><strong>Bio:</strong> {formData.bio}</p>
+              <p><strong>Account Type:</strong> {formData.account_type}</p>
+            </div>
+
+            <div className="flex justify-between pt-4">
+              <button type="button" onClick={handleBack} className="px-6 py-3 text-sm font-medium bg-gray-300 rounded-full">Back</button>
+              <button type="submit" disabled={submitting} className="px-6 py-3 text-sm font-medium text-white bg-purple hover:bg-purple-attention rounded-full">
+                {submitting ? 'Submitting...' : 'Finish'}
+              </button>
+            </div>
+            {error && <p className="text-sm text-red">{error}</p>}
           </form>
-        </div>
-      </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-10">
+      {renderStep()}
     </div>
   );
-} 
+}

@@ -29,19 +29,27 @@ export default function ListOfCategory() {
         const skillMap = new Map<string, number>();
         
         data.forEach(({ main_skill, skills }) => {
+          // Create a Set of all skills for this user to avoid duplicates
+          const userSkills = new Set<string>();
+          
           // Add main skill
           if (main_skill) {
-            skillMap.set(main_skill, (skillMap.get(main_skill) || 0) + 1);
+            userSkills.add(main_skill);
           }
           
           // Add additional skills
           if (skills && Array.isArray(skills)) {
             skills.forEach(skill => {
               if (skill) {
-                skillMap.set(skill, (skillMap.get(skill) || 0) + 1);
+                userSkills.add(skill);
               }
             });
           }
+
+          // Count each unique skill only once per user
+          userSkills.forEach(skill => {
+            skillMap.set(skill, (skillMap.get(skill) || 0) + 1);
+          });
         });
 
         // Convert map to array, sort by count, and take top 20
@@ -106,7 +114,7 @@ export default function ListOfCategory() {
                 {firstColumnSkills.map((skill) => (
                   <a 
                     key={skill.skill}
-                    href={`/search?skill=${encodeURIComponent(skill.skill)}`}
+                    href={`/category/${skill.skill.toLowerCase().replace(/\s+/g, '-')}`}
                     className="block text-body hover:text-green-hover transition-colors"
                   >
                     {skill.skill}
@@ -117,7 +125,7 @@ export default function ListOfCategory() {
                 {secondColumnSkills.map((skill) => (
                   <a 
                     key={skill.skill}
-                    href={`/search?skill=${encodeURIComponent(skill.skill)}`}
+                    href={`/category/${skill.skill.toLowerCase().replace(/\s+/g, '-')}`}
                     className="block text-body hover:text-green-hover transition-colors"
                   >
                     {skill.skill}

@@ -34,31 +34,33 @@ export default function Category() {
         const skillMap = new Map<string, { count: number; totalRating: number; ratingCount: number }>();
         
         userData.forEach(({ main_skill, skills, rating }) => {
+          // Create a Set of all skills for this user to avoid duplicates
+          const userSkills = new Set<string>();
+          
           // Process main skill
           if (main_skill) {
-            const existing = skillMap.get(main_skill) || { count: 0, totalRating: 0, ratingCount: 0 };
-            existing.count++;
-            if (rating) {
-              existing.totalRating += rating;
-              existing.ratingCount++;
-            }
-            skillMap.set(main_skill, existing);
+            userSkills.add(main_skill);
           }
 
           // Process additional skills
           if (skills && Array.isArray(skills)) {
             skills.forEach(skill => {
               if (skill) {
-                const existing = skillMap.get(skill) || { count: 0, totalRating: 0, ratingCount: 0 };
-                existing.count++;
-                if (rating) {
-                  existing.totalRating += rating;
-                  existing.ratingCount++;
-                }
-                skillMap.set(skill, existing);
+                userSkills.add(skill);
               }
             });
           }
+
+          // Count each unique skill only once per user
+          userSkills.forEach(skill => {
+            const existing = skillMap.get(skill) || { count: 0, totalRating: 0, ratingCount: 0 };
+            existing.count++;
+            if (rating) {
+              existing.totalRating += rating;
+              existing.ratingCount++;
+            }
+            skillMap.set(skill, existing);
+          });
         });
 
         // Convert map to array and calculate averages

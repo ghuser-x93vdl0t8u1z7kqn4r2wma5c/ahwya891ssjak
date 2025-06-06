@@ -1,9 +1,73 @@
 "use client"
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/app/lib/supabase';
+
+type User = {
+  username: string;
+  profile_picture_url: string | null;
+};
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          // Fetch user profile data
+          const { data: userData, error } = await supabase
+            .from('users')
+            .select('username, profile_picture_url')
+            .eq('id', session.user.id)
+            .single();
+
+          if (!error && userData) {
+            setUser(userData);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+
+    // Subscribe to auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        const { data: userData } = await supabase
+          .from('users')
+          .select('username, profile_picture_url')
+          .eq('id', session.user.id)
+          .single();
+
+        if (userData) {
+          setUser(userData);
+        }
+      } else if (event === 'SIGNED_OUT') {
+        setUser(null);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setUser(null);
+    setIsDropdownOpen(false);
+    window.location.href = '/';
+  };
 
   return (
     <nav className="w-full bg-background border-b border-gray-200">
@@ -59,15 +123,68 @@ export default function Navbar() {
                 </svg>
               </button>
             </div>
-            <Link href="/login" className="text-body hover:text-green-hover">
-              Log In
-            </Link>
-            <Link
-              href="/signup"
-              className="bg-green-button text-white px-6 py-2 rounded-full hover:bg-green-hover transition-colors"
-            >
-              Sign Up
-            </Link>
+            
+            {!loading && (
+              <>
+                {user ? (
+                  <div className="relative">
+                    <button
+                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                      className="flex items-center space-x-2 focus:outline-none"
+                    >
+                      {user.profile_picture_url ? (
+                        <img
+                          src={user.profile_picture_url}
+                          alt={user.username}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+                          <span className="text-purple-600 text-sm font-semibold">
+                            {user.username?.charAt(0)?.toUpperCase() || '?'}
+                          </span>
+                        </div>
+                      )}
+                      <span className="text-body">{user.username}</span>
+                      <svg className="w-4 h-4 text-body" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {isDropdownOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10">
+                        <Link
+                          href={`/profile/${user.username}`}
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsDropdownOpen(false)}
+                        >
+                          Profile
+                        </Link>
+                        <button
+                          onClick={handleLogout}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        >
+                          Logout
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <>
+                    <Link href="/login" className="text-body hover:text-green-hover">
+                      Log In
+                    </Link>
+                    <Link
+                      href="/signup"
+                      className="bg-green-button text-white px-6 py-2 rounded-full hover:bg-green-hover transition-colors"
+                    >
+                      Sign Up
+                    </Link>
+                  </>
+                )}
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -109,47 +226,54 @@ export default function Navbar() {
                   className="w-full px-4 py-2 bg-gray-input text-gray-input-text rounded-full focus:outline-none focus:ring-2 focus:ring-purple"
                 />
               </div>
-              <div className="flex flex-col space-y-2 pt-4">
-                <Link href="/login" className="text-body hover:text-green-hover">
-                  Log In
-                </Link>
-                <Link
-                  href="/signup"
-                  className="bg-green-button text-white px-6 py-2 rounded-full hover:bg-green-hover transition-colors text-center"
-                >
-                  Sign Up
-                </Link>
-              </div>
+              {!loading && (
+                <div className="flex flex-col space-y-2 pt-4">
+                  {user ? (
+                    <>
+                      <Link
+                        href={`/profile/${user.username}`}
+                        className="text-body hover:text-green-hover flex items-center space-x-2"
+                      >
+                        {user.profile_picture_url ? (
+                          <img
+                            src={user.profile_picture_url}
+                            alt={user.username}
+                            className="w-8 h-8 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center">
+                            <span className="text-purple-600 text-sm font-semibold">
+                              {user.username?.charAt(0)?.toUpperCase() || '?'}
+                            </span>
+                          </div>
+                        )}
+                        <span>{user.username}</span>
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="text-body hover:text-green-hover text-left"
+                      >
+                        Logout
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <Link href="/login" className="text-body hover:text-green-hover">
+                        Log In
+                      </Link>
+                      <Link
+                        href="/signup"
+                        className="bg-green-button text-white px-6 py-2 rounded-full hover:bg-green-hover transition-colors text-center"
+                      >
+                        Sign Up
+                      </Link>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}
-
-        {/* Secondary Navigation */}
-        <div className="hidden md:flex space-x-8 py-4">
-          <Link href="/beauty-influencers" className="text-body hover:text-green-hover">
-            Beauty Influencers
-          </Link>
-          <Link href="/design-development" className="text-body hover:text-green-hover">
-            Design & Development
-          </Link>
-          <Link href="/story-tellers" className="text-body hover:text-green-hover">
-            Story Tellers
-          </Link>
-          <Link href="/writers" className="text-body hover:text-green-hover">
-            Writers
-          </Link>
-          <Link href="/artists" className="text-body hover:text-green-hover">
-            Artists
-          </Link>
-          <div className="relative group">
-            <button className="text-body hover:text-green-hover flex items-center">
-              More
-              <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-          </div>
-        </div>
       </div>
     </nav>
   );
