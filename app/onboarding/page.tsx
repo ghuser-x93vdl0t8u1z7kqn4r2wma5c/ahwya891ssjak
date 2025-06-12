@@ -213,7 +213,7 @@ export default function OnboardingPage() {
                 >
                   <option value="">Select account type</option>
                   <option value="freelancer">Freelancer</option>
-                  <option value="creator">Creator</option>
+                  {/*<option value="creator">Creator</option>*/}
                   <option value="business">Business</option>
                 </select>
               </div>

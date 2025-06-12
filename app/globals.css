@@ -19,6 +19,7 @@
   /* Gray Variants */
   --color-gray-input-text: #868686; /* Grey input text */
   --color-gray-input-bg: #F6F6F6;   /* Light gray input fields */
+  --color-gray-input-border: #E5E5E5; /* Light gray input fields */
   
   /* Other Colors */
   --color-background: #FFFFFF;      /* Background white */
