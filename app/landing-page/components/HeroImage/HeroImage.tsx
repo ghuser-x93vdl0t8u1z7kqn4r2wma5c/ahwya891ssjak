@@ -1,5 +1,7 @@
 'use client';
 
+import Link from "next/link";
+
 export default function HeroImage() {
   return (
     <section className="w-full bg-white">
@@ -15,12 +17,11 @@ export default function HeroImage() {
               Forget the old rules. You can have the best people. Right now. Right here.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 mb-16">
+              <Link href="/signup">
               <button className="w-full sm:w-auto bg-[#6941C6] text-white px-8 py-3.5 rounded-lg hover:bg-opacity-90 transition-colors text-lg font-medium">
                 Get Started
               </button>
-              <button className="w-full sm:w-auto text-[#6941C6] border-2 border-[#6941C6] px-8 py-3.5 rounded-lg hover:bg-[#6941C6] hover:text-white transition-colors text-lg font-medium">
-                Learn how to hire
-              </button>
+              </Link>
             </div>
             <div>
               <p className="text-[#667085] text-sm mb-4">Trusted by</p>

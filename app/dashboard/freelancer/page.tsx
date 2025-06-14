@@ -142,7 +142,10 @@ export default function FreelancerDashboard() {
   }
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-white">
-    <Sidebar />
+      <div className="flex flex-row min-h-screen bg-green-light w-full justify-between">
+              <div className='w-5 md:w-64'>
+                <Sidebar />
+              </div>
       <main className="flex-1 p-4 md:p-8">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
           <h1 className="yatra-one-text text-2xl md:text-4xl text-purple font-bold">Freelancer Dashboard</h1>
@@ -319,6 +322,7 @@ export default function FreelancerDashboard() {
       </main>
       {/* Mini Chat Panel */}
       {userId && <ChatPanel userId={userId} openChatWithUserId={openChatWithUserId} onCloseChat={() => setOpenChatWithUserId(null)} />}
+    </div>
     </div>
   );
 }

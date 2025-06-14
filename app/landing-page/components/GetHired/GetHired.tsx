@@ -57,7 +57,7 @@ export default function GetHired() {
             {/* Bottom Button */}
             <div>
               <Link
-                href="/find-opportunities"
+                href="/signup"
                 className="inline-block bg-white text-sm font-medium px-6 py-3 rounded-full hover:bg-white/90 transition-colors"
               >
                 Find Opportunities

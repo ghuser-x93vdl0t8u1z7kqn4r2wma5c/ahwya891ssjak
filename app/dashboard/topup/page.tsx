@@ -76,9 +76,10 @@ export default function WalletTopup() {
 
   return (
     <div className="m-auto flex w-full h-full flex-row justify-between gap-2">
-    <div className="w-fit h-full">
-      <Sidebar />
-    </div>
+   <div className="flex flex-row min-h-screen bg-green-light w-full justify-between">
+           <div className='w-5 md:w-64'>
+             <Sidebar />
+           </div>
     <div className="md:max-w-2xl md:w-full w-full max-w-lg mx-auto p-8">
      <h1 className="text-4xl font-bold text-purple yatra-one-text mb-6">Wallet Top Up Request</h1>
 
@@ -143,6 +144,7 @@ export default function WalletTopup() {
           </button>
         </form>
       )}
+    </div>
     </div>
     </div>
   );

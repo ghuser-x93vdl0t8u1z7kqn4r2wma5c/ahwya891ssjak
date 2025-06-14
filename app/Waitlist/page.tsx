@@ -229,3 +229,8 @@ export default function Waitlist() {
   );
 }
 */
+'use client';
+
+export default function EmptyPage() {
+  return null; // or <></> if you want
+}

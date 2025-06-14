@@ -89,13 +89,9 @@ export default function Category() {
 
   if (loading) {
     return (
-      <section className="w-full bg-white py-16">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-center">
-            <div className="animate-pulse">Loading categories...</div>
-          </div>
-        </div>
-      </section>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
     );
   }
 
@@ -122,7 +118,7 @@ export default function Category() {
                 <div className="flex flex-col space-y-2">
                   <h3 className="font-semibold text-lg text-black">{category.title}</h3>
                   <div className="flex flex-row justify-between items-center space-x-2">
-                    <span className="text-purple-attention">★ {category.rating.toFixed(2)}/5</span>
+                      {/*<span className="text-purple-attention">★ {category.rating.toFixed(2)}/5</span>*/}
                     <span className="text-purple-attention">{category.skillCount} freelancers</span>
                   </div>
                 </div>

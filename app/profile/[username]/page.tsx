@@ -52,12 +52,16 @@ export default function ProfilePage() {
   }, [loading]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="flex items-center justify-center h-[100vh]">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+    </div>;
   }
   if (error === 'User not found') {
     const UserNotFoundComponent = lazy(() => import('./user-not-found/page'));
     return (
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense fallback={<div className="flex items-center justify-center h-[100vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>}>
         <UserNotFoundComponent />
       </Suspense>
     );
@@ -67,7 +71,9 @@ export default function ProfilePage() {
   }
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div className="flex items-center justify-center h-[100vh]">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+    </div>}>
       <DynamicProfileComponent username={username as string} />
     </Suspense>
   );

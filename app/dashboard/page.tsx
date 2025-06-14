@@ -32,7 +32,9 @@ const DashboardPage = () => {
     fetchAccountType();
   }, []);
 
-  if (loading) return <div>Loading dashboard...</div>;
+  if (loading) return <div className="flex items-center justify-center h-[100vh]">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+  </div>;
   if (accountType === 'business') return <ClientDashboard />;
   if (accountType === 'freelancer') return <FreelancerDashboard />;
   return <div>Account type not recognized.</div>;

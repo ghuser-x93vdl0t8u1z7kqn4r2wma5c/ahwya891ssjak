@@ -1,3 +1,5 @@
+'use client';
+/* eslint-disable */
 import React from 'react';
 
 interface EducationProps {

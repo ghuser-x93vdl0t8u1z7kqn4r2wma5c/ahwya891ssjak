@@ -33,7 +33,7 @@ export default function FindTalent() {
 
             <div className="mt-12">
               <Link
-                href="/post-job"
+                href="/signup"
                 className="inline-flex flex-col bg-purple-attention px-8 py-6 rounded-lg hover:bg-purple hover:scale-105 transition-all"
               >
                 <span className="text-xl font-medium ">Post a job and hire a professional</span>

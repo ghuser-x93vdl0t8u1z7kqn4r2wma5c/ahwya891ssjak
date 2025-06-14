@@ -159,13 +159,18 @@ export default function ClientDashboard() {
   };
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-green-light">
-      <Sidebar />
-      <main className="flex-1 p-4 md:p-8 overflow-y-auto">
+    <div className="flex flex-col gap-2 md:flex-row min-h-screen bg-green-light">
+      <div className="flex flex-row gap-2 min-h-screen bg-green-light w-full justify-between">
+        <div className='w-5 md:w-64'>
+          <Sidebar />
+        </div>
+      <main className="flex-1 p-4 py-7 md:p-8 overflow-y-auto">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
           <h1 className="yatra-one-text text-2xl md:text-4xl text-purple font-bold">Business Dashboard</h1>
           <div className="flex items-center gap-3 flex-wrap">
-            {userId && <NotificationBell userId={userId} />}
+            <div className="hidden">
+              {userId && <NotificationBell userId={userId} />}
+            </div>
             <button
               className="bg-purple px-5 py-2 rounded-lg text-white font-bold shadow hover:bg-purple-attention border-2 border-purple-attention transition"
               onClick={() => router.push('/dashboard/client/create-job')}
@@ -339,6 +344,7 @@ export default function ClientDashboard() {
           })
         )}
       </main>
+      </div>
 
       {userId && (
         <ChatPanel

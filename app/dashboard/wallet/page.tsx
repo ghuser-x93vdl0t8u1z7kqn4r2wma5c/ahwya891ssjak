@@ -347,15 +347,18 @@ export default function WalletPage() {
     localStorage.removeItem('walletUnlockedUntil');
   };
 
-  if (loading) return <div className="p-8">Loading...</div>;
+  if (loading) return <div className="flex items-center justify-center h-[100vh]">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+  </div>;
   if (error) return <div className="p-8 text-red-600">{error}</div>;
 
   return (
-    <div className="flex flex-row justify-between gap-2">
-      <div className="w-fit h-full">
-    <Sidebar />
-    </div>
-    <div className="w-full mx-auto p-4">
+    <div className="flex w-full bg-green-light">
+    <div className="flex flex-row gap-2 md:gap-8 min-h-screen bg-green-light w-full justify-between">
+            <div className='w-5 md:w-64'>
+              <Sidebar />
+            </div>
+    <div className="w-full mx-5 p-4">
      
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-4xl yatra-one-text text-purple font-bold">Wallet</h1>
@@ -696,6 +699,7 @@ export default function WalletPage() {
           {successMessage}
         </div>
       )}
+    </div>
     </div>
     </div>
   );

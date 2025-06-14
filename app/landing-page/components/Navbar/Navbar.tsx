@@ -81,49 +81,19 @@ export default function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             <div className="relative group">
-              <button className="text-body hover:text-green-hover flex items-center">
-                Find Influencers
-                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
+    
             </div>
             <div className="relative group">
-              <button className="text-body hover:text-green-hover flex items-center">
-                Find Sponsors
-                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
+              
             </div>
             <div className="relative group">
-              <button className="text-body hover:text-green-hover flex items-center">
-                Why Us
-                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
+              
             </div>
-            <Link href="/enterprise" className="text-body hover:text-green-hover">
-              Enterprise
-            </Link>
+          
           </div>
 
           {/* Search and Auth */}
           <div className="hidden md:flex items-center space-x-4">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search"
-                className="w-64 px-4 py-2 bg-gray-input text-gray-input-text rounded-full focus:outline-none focus:ring-2 focus:ring-purple"
-              />
-              <button className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                <svg className="w-5 h-5 text-gray-input-text" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </button>
-            </div>
-            
             {!loading && (
               <>
                 {user ? (
@@ -214,25 +184,6 @@ export default function Navbar() {
         {isOpen && (
           <div className="md:hidden py-4">
             <div className="flex flex-col space-y-4">
-              <Link href="/find-influencers" className="text-body hover:text-green-hover">
-                Find Influencers
-              </Link>
-              <Link href="/find-sponsors" className="text-body hover:text-green-hover">
-                Find Sponsors
-              </Link>
-              <Link href="/why-us" className="text-body hover:text-green-hover">
-                Why Us
-              </Link>
-              <Link href="/enterprise" className="text-body hover:text-green-hover">
-                Enterprise
-              </Link>
-              <div className="pt-4 border-t border-gray-200">
-                <input
-                  type="text"
-                  placeholder="Search"
-                  className="w-full px-4 py-2 bg-gray-input text-gray-input-text rounded-full focus:outline-none focus:ring-2 focus:ring-purple"
-                />
-              </div>
               {!loading && (
                 <div className="flex flex-col space-y-2 pt-4">
                   {user ? (
@@ -255,6 +206,13 @@ export default function Navbar() {
                           </div>
                         )}
                         <span>{user.username}</span>
+                        
+                      </Link>
+                        <Link
+                        href={`/dashboard`}
+                        className="text-body hover:text-green-hover flex items-center space-x-2"
+                      >
+                        Dashboard
                       </Link>
                       <button
                         onClick={handleLogout}

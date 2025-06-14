@@ -90,7 +90,10 @@ export default function WalletWithdraw() {
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar />
+      <div className="flex flex-row min-h-screen bg-green-light w-full justify-between">
+              <div className='w-5 md:w-64'>
+                <Sidebar />
+              </div>
 
       <main className="flex flex-grow items-center justify-center p-6 bg-gray-50">
         <section className="max-w-xl w-full bg-white rounded-lg shadow-md p-6 flex flex-col gap-2 min-h-[520px]">
@@ -241,6 +244,7 @@ export default function WalletWithdraw() {
           )}
         </section>
       </main>
+    </div>
     </div>
   );
 }

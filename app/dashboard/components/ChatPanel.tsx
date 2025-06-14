@@ -1,3 +1,6 @@
+
+'use client';
+/* eslint-disable */
 import React from 'react';
 import { useEffect, useState, useRef } from 'react';
 import { supabase } from '@/app/lib/supabase';
@@ -11,9 +14,7 @@ interface ChatPanelProps {
 }
 
 export default function ChatPanel({ userId, openChatWithUserId, onCloseChat }: ChatPanelProps) {
-  // eslint-disable-next-line
   const [chats, setChats] = useState<any[]>([]);
-  // eslint-disable-next-line
   const [partners, setPartners] = useState<{[chatId: string]: any}>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +36,6 @@ export default function ChatPanel({ userId, openChatWithUserId, onCloseChat }: C
         // Auto-create chat if not exists
         try {
           setLoading(true);
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { data, error } = await supabase
             .from('chats')
             .insert({ user_1_uid: userId, user_2_uid: openChatWithUserId })
@@ -68,9 +68,7 @@ export default function ChatPanel({ userId, openChatWithUserId, onCloseChat }: C
     };
     if (openChatWithUserId) ensureChat();
   }, [openChatWithUserId, chats, userId]);
-  // eslint-disable-next-line
   const [selectedChat, setSelectedChat] = useState<any | null>(null);
-  // eslint-disable-next-line
   const [messages, setMessages] = useState<any[]>([]);
   const [msgLoading, setMsgLoading] = useState(false);
   const [msgError, setMsgError] = useState<string | null>(null);
@@ -93,7 +91,6 @@ export default function ChatPanel({ userId, openChatWithUserId, onCloseChat }: C
         if (error) throw error;
         setChats(data || []);
         // Fetch partner info for each chat
-        // eslint-disable-next-line
         const userIds = (data || []).map((c: any) => c.user_1_uid === userId ? c.user_2_uid : c.user_1_uid);
         // Also include openChatWithUserId if not already in userIds
         if (openChatWithUserId && !userIds.includes(openChatWithUserId)) userIds.push(openChatWithUserId);
@@ -103,17 +100,13 @@ export default function ChatPanel({ userId, openChatWithUserId, onCloseChat }: C
             .select('id, username, profile_picture_url')
             .in('id', userIds);
           if (usersError) throw usersError;
-          // eslint-disable-next-line
           const partnersObj: {[chatId: string]: any} = {};
-          // eslint-disable-next-line
           (data || []).forEach((c: any) => {
             const partnerId = c.user_1_uid === userId ? c.user_2_uid : c.user_1_uid;
-            // eslint-disable-next-line
             partnersObj[c.chat_id] = users.find((u: any) => u.id === partnerId);
           });
           // Add openChatWithUserId as a special "pending" partner if not in any chat
           if (openChatWithUserId) {
-            // eslint-disable-next-line
             const pendingPartner = users.find((u: any) => u.id === openChatWithUserId);
             if (pendingPartner) partnersObj['pending'] = pendingPartner;
           }
@@ -342,7 +335,9 @@ export default function ChatPanel({ userId, openChatWithUserId, onCloseChat }: C
             </React.Fragment>
           ) : (
             <div className="flex-1 overflow-auto space-y-2">
-              {loading && <div>Loading...</div>}
+              {loading && <div className="flex items-center justify-center h-auto">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+              </div>}
               {error && <div className="text-red-600">{error}</div>}
               {chats.length === 0 && !loading && <div className="text-gray-500">No open chats.</div>}
               {chats.map(chat => (

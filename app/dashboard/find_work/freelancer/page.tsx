@@ -19,7 +19,6 @@ type Job = {
 };
 
 export default function FindWorkFreelancer() {
-  // eslint-disable-next-line
   const [profile, setProfile] = useState<any>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -210,7 +209,10 @@ export default function FindWorkFreelancer() {
 
   return (
     <div className="flex min-h-screen bg-green-light">
-      <Sidebar />
+      <div className="flex flex-row min-h-screen bg-green-light w-full justify-between">
+              <div className='w-5 md:w-64'>
+                <Sidebar />
+              </div>
       <main className="flex-1 p-6">
         <div className="flex justify-between items-center mb-8">
           <h1 className="yatra-one-text text-purple-attention text-3xl font-bold text-heading">Find Work</h1>
@@ -400,6 +402,7 @@ export default function FindWorkFreelancer() {
 
         </section>
       </main>
+      </div>
       {/* Mini Chat Panel */}
       {userId && <ChatPanel userId={userId} />}
     </div>

@@ -134,6 +134,7 @@ export default function CreatorDashboard() {
       </div>
     );
   }
+  }
   if (error) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -194,3 +195,9 @@ export default function CreatorDashboard() {
   );
 }
 */
+
+'use client';
+
+export default function EmptyPage() {
+  return null; // or <></> if you want
+}

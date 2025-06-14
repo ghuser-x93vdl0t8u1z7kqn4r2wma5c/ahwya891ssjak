@@ -89,7 +89,10 @@ export default function CreateJob() {
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
-      <Sidebar />
+      <div className="flex flex-row min-h-screen bg-green-light w-full justify-between">
+        <div className='w-5 md:w-64'>
+          <Sidebar />
+        </div>
       <main className="flex-1 p-8 max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-10">
           <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">Post a New Job</h1>
@@ -217,6 +220,7 @@ export default function CreateJob() {
         </form>
       </main>
       {userId && <ChatPanel userId={userId} />}
+    </div>
     </div>
   );
 }

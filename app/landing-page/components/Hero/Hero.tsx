@@ -21,16 +21,10 @@ export default function Hero() {
 
             <div className="flex flex-wrap gap-4">
               <Link
-                href="/get-started"
+                href="/signup"
                 className="bg-purple text-white px-8 py-3 rounded-full hover:bg-purple-attention transition-colors"
               >
                 Get Started
-              </Link>
-              <Link
-                href="/learn-more"
-                className="text-body hover:text-green-hover px-8 py-3 border border-gray-300 rounded-full hover:border-green-hover transition-colors"
-              >
-                Learn how to hire
               </Link>
             </div>
 

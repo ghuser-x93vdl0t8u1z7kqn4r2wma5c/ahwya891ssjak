@@ -7,6 +7,8 @@ import Image from 'next/image';
 import { supabase } from '@/app/lib/supabase';
 import EditEdu from './EditEdu';
 import EditWork from './EditWork';
+import Link from 'next/link';
+import { Home } from 'lucide-react';
 
 type Profile = {
   username: string;
@@ -49,6 +51,7 @@ export default function ProfilePage() {
   const [editingTitle, setEditingTitle] = useState(false);
   const [editingRate, setEditingRate] = useState(false);
   const [editingBio, setEditingBio] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const [editingPortfolio, setEditingPortfolio] = useState(false);
   const [editingSkills, setEditingSkills] = useState(false);
   const [editingMainSkill, setEditingMainSkill] = useState(false);
@@ -175,12 +178,8 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-center items-center">
-            <div className="animate-pulse">Loading profile...</div>
-          </div>
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -201,7 +200,7 @@ export default function ProfilePage() {
   return (
   <div className="min-h-screen bg-white">
     {/* Header */}
-    <div className="border-b border-gray-200 bg-white flex items-center px-6 py-4">
+    <div className="border-b border-gray-200 bg-white flex items-center px-6 py-4 justify-between">
       <div className="flex items-center">
         {/* Profile Picture Upload */}
         <div
@@ -292,14 +291,16 @@ export default function ProfilePage() {
           )}
         </div>
       </div>
-      <div className="ml-auto">
-        <button className="p-2 rounded-full bg-purple text-white hover:bg-purple-attention">
-          <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-        </button>
-      </div>
+        <div className="flex flex-col items-center space-y-1 text-gray-700 hover:text-purple cursor-pointer select-none">
+  <Link href="/">
+   
+      <Home width={20} height={20} />
+  </Link>
+  <span className="text-sm font-medium">Home</span>
+</div>
     </div>
     {/* Main Layout */}
-    <div className="flex max-w-6xl mx-auto">
+    <div className="flex mt-2 max-w-6xl mx-auto">
       {/* Sidebar */}
       <aside className="mx-0 w-1/4 min-w-[250px] border-r border-gray-200 bg-green-light pt-6 px-6 pb-8 flex flex-col gap-8">
         {/* Avatar, Name, Username, Location are in header */}
@@ -326,7 +327,7 @@ export default function ProfilePage() {
       }}
     />
     <button
-      className="mt-2 px-3 py-1 bg-purple text-white rounded hover:bg-purple-attention text-xs"
+      className="mt-2 bg-purple text-white text-sm px-4 py-2 rounded hover:bg-purple-attention transition disabled:opacity-50"
       onClick={() => setShowAddEducation(false)}
     >
       ← Back
@@ -355,84 +356,86 @@ export default function ProfilePage() {
         <div className="bg-green-light w-full border border-gray-200 rounded shadow-sm p-6 flex flex-col gap-4 min-h-[200px]">
           <div className="flex flex-row items-center justify-between">
             <div className="flex items-center gap-2">
-  {editingTitle ? (
-    <>
-      <input
-        type="text"
-        className="border px-2 py-1 rounded text-base text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
-        value={newTitle}
-        onChange={e => setNewTitle(e.target.value)}
-        disabled={savingTitle}
-        style={{ minWidth: 160 }}
-      />
+            {editingTitle ? (
+  <div className="flex flex-wrap items-start gap-2 mb-2 w-full">
+    <input
+      type="text"
+      className="w-[280px] bg-gray-input text-base rounded px-3 py-2 border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple"
+      value={newTitle}
+      onChange={e => setNewTitle(e.target.value)}
+      disabled={savingTitle}
+      placeholder="Enter your professional title"
+    />
+    <button
+      onClick={async () => {
+        setSavingTitle(true);
+        await supabase.from('users').update({ title: newTitle }).eq('username', profile.username);
+        setEditingTitle(false);
+        setSavingTitle(false);
+        const { data, error } = await supabase
+          .from('users')
+          .select(`
+            username,
+            account_type,
+            profile_picture_url,
+            hourly_rate,
+            main_skill,
+            title,
+            skills,
+            education,
+            experience,
+            portfolio,
+            rating,
+            created_at,
+            updated_at,
+            display_name,
+            bio
+          `)
+          .eq('username', profile.username)
+          .eq('account_type', 'freelancer')
+          .single();
+        if (!error && data) setProfile(data);
+      }}
+      disabled={savingTitle}
+      className="bg-purple text-white text-sm px-4 py-2 rounded hover:bg-purple-attention transition disabled:opacity-50"
+    >
+      {savingTitle ? 'Saving...' : 'Save'}
+    </button>
+    <button
+      onClick={() => setEditingTitle(false)}
+      disabled={savingTitle}
+      className="bg-gray-200 text-gray-800 text-sm px-4 py-2 rounded hover:bg-gray-300 transition disabled:opacity-50"
+    >
+      Cancel
+    </button>
+  </div>
+) : (
+  <div className="flex items-center gap-2 flex-wrap mb-2">
+    <span className="font-bold text-2xl text-heading">
+      {profile.title || 'This user has not configured their title'}
+    </span>
+    {currentUsername === profile.username && (
       <button
-        onClick={async () => {
-          setSavingTitle(true);
-          await supabase.from('users').update({ title: newTitle }).eq('username', profile.username);
-          setEditingTitle(false);
-          setSavingTitle(false);
-          // Refresh profile data
-          const { data, error } = await supabase
-            .from('users')
-            .select(`
-              username,
-              account_type,
-              profile_picture_url,
-              hourly_rate,
-              main_skill,
-              title,
-              skills,
-              education,
-              experience,
-              portfolio,
-              rating,
-              created_at,
-              updated_at,
-              display_name,
-              bio
-            `)
-            .eq('username', profile.username)
-            .eq('account_type', 'freelancer')
-            .single();
-          if (!error && data) setProfile(data);
+        onClick={() => {
+          setEditingTitle(true);
+          setNewTitle(profile.title || '');
         }}
-        className="ml-1 px-2 py-1 bg-purple text-white rounded hover:bg-purple-attention text-xs"
-        disabled={savingTitle}
+        className="p-2 rounded-full hover:bg-purple-attention transition"
+        title="Edit Title"
       >
-        Save
+        <Image src="/edit.svg" alt="Edit" width={16} height={16} />
       </button>
-      <button
-        onClick={() => setEditingTitle(false)}
-        className="ml-1 px-2 py-1 bg-purple-attention text-purple rounded hover:bg-purple text-xs"
-        disabled={savingTitle}
-      >
-        Cancel
-      </button>
-    </>
-  ) : (
-    <>
-      <span className="font-bold text-2xl text-heading">{profile.title || 'The user has not configured his title'}</span>
-      {currentUsername === profile.username && (
-        <button
-          onClick={() => {
-            setEditingTitle(true);
-            setNewTitle(profile.title || "");
-          }}
-          className="px-2 text-white rounded"
-          title="Edit Title"
-        >
-          <Image src="/edit.svg" alt="Edit" width={15} height={15} />
-        </button>
-      )}
-    </>
-  )}
+    )}
+  </div>
+)}
+
 </div>
             <div className="flex items-center gap-2">
   {editingRate ? (
     <>
       <input
         type="number"
-        className="border px-2 py-1 rounded text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className="w-[280px] bg-gray-input text-base rounded px-3 py-2 border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple"
         value={newRate}
         onChange={e => setNewRate(e.target.value)}
         disabled={savingRate}
@@ -455,12 +458,12 @@ export default function ProfilePage() {
             .single();
           if (!error && data) setProfile(data);
         }}
-        className="ml-1 px-2 py-1 bg-purple text-white rounded hover:bg-purple-attention text-xs"
+        className="bg-purple text-white text-sm px-4 py-2 rounded hover:bg-purple-attention transition disabled:opacity-50"
         disabled={savingRate}
       >Save</button>
       <button
         onClick={() => setEditingRate(false)}
-        className="ml-1 px-2 py-1 bg-purple-attention text-purple rounded hover:bg-purple text-xs"
+        className="bg-gray-200 text-gray-800 text-sm px-4 py-2 rounded hover:bg-gray-300 transition disabled:opacity-50"
         disabled={savingRate}
       >Cancel</button>
     </>
@@ -479,11 +482,11 @@ export default function ProfilePage() {
   )}
 </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex h-full w-full items-center gap-2">
   {editingBio ? (
     <>
       <textarea
-        className="border px-2 py-1 rounded text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className="w-full bg-gray-input text-base rounded px-3 py-2 border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple"
         value={newBio}
         onChange={e => setNewBio(e.target.value)}
         disabled={savingBio}
@@ -503,18 +506,37 @@ export default function ProfilePage() {
             .single();
           if (!error && data) setProfile(data);
         }}
-        className="ml-1 px-2 py-1 bg-purple text-white rounded hover:bg-purple-attention text-xs"
+        className="bg-purple text-white text-sm px-4 py-2 rounded hover:bg-purple-attention transition disabled:opacity-50"
         disabled={savingBio}
       >Save</button>
       <button
         onClick={() => setEditingBio(false)}
-        className="ml-1 px-2 py-1 bg-purple-attention text-purple rounded hover:bg-purple text-xs"
+        className="bg-gray-200 text-gray-800 text-sm px-4 py-2 rounded hover:bg-gray-300 transition disabled:opacity-50"
         disabled={savingBio}
       >Cancel</button>
     </>
   ) : (
-    <>
-      <span className="text-sm text-gray-500">{profile.bio || 'The user has not configured his bio'}</span>
+    <div className='flex flex-col gap-2'>
+       <p
+            className={`text-sm text-gray-500 whitespace-pre-wrap ${
+              !expanded
+                ? 'line-clamp-5 overflow-hidden'
+                : ''
+            }`}
+            style={{ wordBreak: 'break-word' }}
+          >
+            {profile.bio || 'The user has not configured his bio'}
+          </p>
+        <div className='flex flex-row items-center gap-2'>
+          {profile.bio && profile.bio.split('\n').length > 5 && (
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="inline-block px-3 py-1 bg-purple text-white rounded hover:bg-purple-attention text-xs font-semibold cursor-pointer select-none"
+              aria-label={expanded ? 'Show less' : 'Show more'}
+            >
+              {expanded ? 'Show less' : 'Show More'}
+            </button>
+          )}
       {currentUsername === profile.username && (
         <button onClick={() => {
           setEditingBio(true);
@@ -523,180 +545,232 @@ export default function ProfilePage() {
           <Image src="/edit.svg" alt="Edit" width={15} height={15} />
         </button>
       )}
-    </>
+    </div>
+    </div>
   )}
 </div>
           <div className="flex flex-wrap gap-2">
           <div className="flex flex-col gap-2 mb-1">
           <span className="font-bold text-lg text-heading">Main Skill</span>
-          <div className="flex items-start justify-start gap-2 mb-1">
+          <div className="flex w-full items-start justify-start gap-2 mb-1">
   {/* Main skill single select */}
   {editingMainSkill ? (
-    <>
-      <select
-        className="border px-2 py-1 rounded text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400 min-w-[120px]"
-        value={newMainSkill}
-        onChange={e => setNewMainSkill(e.target.value)}
-        disabled={savingMainSkill}
-      >
-        <option value="">Select main skill</option>
-        {predefinedSkills.map(skill => (
-          <option key={skill} value={skill}>{skill}</option>
-        ))}
-      </select>
-      <button
-        onClick={async () => {
-          setSavingMainSkill(true);
-          await supabase.from('users').update({ main_skill: newMainSkill }).eq('username', profile.username);
-          setEditingMainSkill(false);
-          setSavingMainSkill(false);
-          const { data, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('username', profile.username)
-            .eq('account_type', 'freelancer')
-            .single();
-          if (!error && data) setProfile(data);
-        }}
-        className="ml-1 px-2 py-1 bg-purple text-white rounded hover:bg-purple-attention text-xs"
-        disabled={savingMainSkill}
-      >Save</button>
-      <button
-        onClick={() => setEditingMainSkill(false)}
-        className="ml-1 px-2 py-1 bg-purple-attention text-purple rounded hover:bg-purple text-xs"
-        disabled={savingMainSkill}
-      >Cancel</button>
-    </>
-  ) : (
-    <>
-      {profile.main_skill && (
-        <span className="bg-purple text-white text-xs px-2 py-1 rounded-full font-semibold">
-          {profile.main_skill}
-        </span>
-      )}
-      {currentUsername === profile.username && (
-        <button onClick={() => {
-          setEditingMainSkill(true);
-          setNewMainSkill(profile.main_skill || "");
-        }} className="px-2 text-white rounded text-xs" title="Edit Main Skill">
-          <Image src="/edit.svg" alt="Edit" width={15} height={15} />
+  <div className="space-y-4">
+    <div className="flex items-start gap-2 flex-wrap w-full">
+      <div className="w-1/2">
+        <select
+          className="w-full bg-gray-input text-sm rounded px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple"
+          value={newMainSkill}
+          onChange={e => setNewMainSkill(e.target.value)}
+          disabled={savingMainSkill}
+        >
+          <option value="">Select main skill</option>
+          {predefinedSkills.map(skill => (
+            <option key={skill} value={skill}>{skill}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="flex gap-2">
+        <button
+          onClick={async () => {
+            setSavingMainSkill(true);
+            await supabase
+              .from('users')
+              .update({ main_skill: newMainSkill })
+              .eq('username', profile.username);
+            setEditingMainSkill(false);
+            setSavingMainSkill(false);
+            const { data, error } = await supabase
+              .from('users')
+              .select('*')
+              .eq('username', profile.username)
+              .eq('account_type', 'freelancer')
+              .single();
+            if (!error && data) setProfile(data);
+          }}
+          disabled={savingMainSkill}
+          className="bg-purple text-white text-sm px-4 py-2 rounded hover:bg-purple-attention transition disabled:opacity-50"
+        >
+          {savingMainSkill ? 'Saving...' : 'Save'}
         </button>
-      )}
-    </>
-  )}
+
+        <button
+          onClick={() => setEditingMainSkill(false)}
+          disabled={savingMainSkill}
+          className="bg-gray-200 text-gray-800 text-sm px-4 py-2 rounded hover:bg-gray-300 transition disabled:opacity-50"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+) : (
+  <div className="flex items-center flex-wrap gap-2 mb-1">
+    {profile.main_skill && (
+      <span className="bg-purple text-white text-sm px-3 py-1 rounded-full font-semibold">
+        {profile.main_skill}
+      </span>
+    )}
+    {currentUsername === profile.username && (
+      <button
+        onClick={() => {
+          setEditingMainSkill(true);
+          setNewMainSkill(profile.main_skill || '');
+        }}
+        className="flex items-center justify-center p-2 rounded-full hover:bg-purple-attention transition"
+        title="Edit Main Skill"
+      >
+        <Image src="/edit.svg" alt="Edit" width={16} height={16} />
+      </button>
+    )}
+  </div>
+)}
+
+
+
 </div>
 
 <span className="font-bold text-lg text-heading">Skills</span>
   {/* Skills multi-select, tag delete/add */}
   {editingSkills ? (
-  <>
-    <div className="flex flex-wrap items-start gap-2 mb-2">
-      {newSkills.map(skill => (
-        <span key={skill} className="flex items-center bg-green-light text-green-dark text-xs px-2 py-1 rounded-full">
+  <div className="space-y-4">
+    {/* Selected Skills */}
+    <div className="flex flex-wrap gap-2">
+      {newSkills.map((skill) => (
+        <span
+          key={skill}
+          className="flex items-center bg-purple-attention text-white text-sm px-3 py-1 rounded-full"
+        >
           {skill}
           <button
-            className="ml-1 text-xs text-red-500 hover:text-red-700"
-            title="Remove Skill"
-            onClick={() => setNewSkills(newSkills.filter(s => s !== skill))}
-            disabled={savingSkills}
             type="button"
-          >×</button>
+            className="ml-2 text-xs text-red-200 hover:text-red-500 focus:outline-none"
+            onClick={() => setNewSkills(newSkills.filter((s) => s !== skill))}
+            disabled={savingSkills}
+            title="Remove Skill"
+          >
+            ×
+          </button>
         </span>
       ))}
-      <div className="relative">
+    </div>
+
+    {/* Input, Suggestions, Save/Cancel Buttons */}
+    <div className="flex items-start gap-2 flex-wrap w-full">
+      <div className="relative w-1/2">
         <input
           type="text"
-          className="bg-gray-input text-base rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-purple"
-          placeholder="Add skill"
-          value={skillInput || ''}
-          onChange={e => {
+          className="w-full bg-gray-input text-sm rounded px-3 py-2 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple"
+          placeholder="Add a skill"
+          value={skillInput}
+          onChange={(e) => {
             setSkillInput(e.target.value);
             setShowSuggestions(true);
           }}
           onFocus={() => setShowSuggestions(true)}
           disabled={savingSkills}
-          style={{ minWidth: 90 }}
         />
         {showSuggestions && filteredSkills.length > 0 && (
-          <div className="absolute z-10 mt-1 bg-white border border-gray-200 rounded shadow-md w-full max-h-32 overflow-auto">
-            {filteredSkills.map(skill => (
-              <div
+          <ul className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded shadow-md max-h-40 overflow-y-auto text-sm">
+            {filteredSkills.map((skill) => (
+              <li
                 key={skill}
-                className="px-2 py-1 cursor-pointer hover:bg-purple-attention text-xs"
+                className="px-3 py-2 cursor-pointer hover:bg-purple-attention"
                 onMouseDown={() => {
-                  setNewSkills([...newSkills, skill]);
+                  if (!newSkills.includes(skill)) {
+                    setNewSkills([...newSkills, skill]);
+                  }
                   setSkillInput('');
                   setShowSuggestions(false);
                 }}
-              >{skill}</div>
+              >
+                {skill}
+              </li>
             ))}
-          </div>
+          </ul>
         )}
       </div>
-    
-    <button
-      onClick={async () => {
-        setSavingSkills(true);
-        await supabase.from('users').update({ skills: newSkills }).eq('username', profile.username);
-        setEditingSkills(false);
-        setSavingSkills(false);
-        const { data, error } = await supabase
-          .from('users')
-          .select('*')
-          .eq('username', profile.username)
-          .eq('account_type', 'freelancer')
-          .single();
-        if (!error && data) setProfile(data);
-      }}
-      className="ml-1 px-2 py-2 bg-purple text-white rounded hover:bg-purple-attention text-xs"
-      disabled={savingSkills}
-    >Save</button>
-    <button
-      onClick={() => setEditingSkills(false)}
-      className="ml-1 px-2 py-2 bg-purple-attention text-purple rounded hover:bg-purple text-xs"
-      disabled={savingSkills}
-    >Cancel</button>
+
+      <div className="flex gap-2">
+        <button
+          onClick={async () => {
+            setSavingSkills(true);
+            await supabase.from('users').update({ skills: newSkills }).eq('username', profile.username);
+            setEditingSkills(false);
+            setSavingSkills(false);
+            const { data, error } = await supabase
+              .from('users')
+              .select('*')
+              .eq('username', profile.username)
+              .eq('account_type', 'freelancer')
+              .single();
+            if (!error && data) setProfile(data);
+          }}
+          disabled={savingSkills}
+          className="bg-purple text-white text-sm px-4 py-2 rounded hover:bg-purple-attention transition disabled:opacity-50"
+        >
+          {savingSkills ? 'Saving...' : 'Save'}
+        </button>
+
+        <button
+          onClick={() => setEditingSkills(false)}
+          disabled={savingSkills}
+          className="bg-gray-200 text-gray-800 text-sm px-4 py-2 rounded hover:bg-gray-300 transition disabled:opacity-50"
+        >
+          Cancel
+        </button>
+      </div>
     </div>
-  </>
+  </div>
 ) : (
   <div className="flex items-center flex-wrap gap-2 mb-1">
-      {profile.skills && profile.skills.length > 0 && profile.skills.map((skill, idx) => (
-        <span key={idx} className="bg-purple-attention text-white text-xs px-2 py-1 rounded-full flex items-center gap-1 mr-1">
-          {skill}
-          {currentUsername === profile.username && (
-            <button
-              className="ml-1 text-xs text-red-500 hover:text-red-700"
-              title="Remove Skill"
-              onClick={async () => {
-                const updatedSkills = (profile.skills || []).filter((s: string) => s !== skill);
-                setSavingSkills(true);
-                await supabase.from('users').update({ skills: updatedSkills }).eq('username', profile.username);
-                setSavingSkills(false);
-                const { data, error } = await supabase
-                  .from('users')
-                  .select('*')
-                  .eq('username', profile.username)
-                  .eq('account_type', 'freelancer')
-                  .single();
-                if (!error && data) setProfile(data);
-              }}
-              disabled={savingSkills}
-            >
-              ×
-            </button>
-          )}
-        </span>
-      ))}
-      {currentUsername === profile.username && (
-        <button onClick={() => {
+    {profile.skills && profile.skills.length > 0 && profile.skills.map((skill, idx) => (
+      <span
+        key={idx}
+        className="bg-purple-attention text-white text-sm px-3 py-1 rounded-full flex items-center gap-1"
+      >
+        {skill}
+        {currentUsername === profile.username && (
+          <button
+            className="ml-1 text-xs text-red-300 hover:text-red-500"
+            title="Remove Skill"
+            onClick={async () => {
+              const updatedSkills = (profile.skills || []).filter((s: string) => s !== skill);
+              setSavingSkills(true);
+              await supabase.from('users').update({ skills: updatedSkills }).eq('username', profile.username);
+              setSavingSkills(false);
+              const { data, error } = await supabase
+                .from('users')
+                .select('*')
+                .eq('username', profile.username)
+                .eq('account_type', 'freelancer')
+                .single();
+              if (!error && data) setProfile(data);
+            }}
+            disabled={savingSkills}
+          >
+            ×
+          </button>
+        )}
+      </span>
+    ))}
+    {currentUsername === profile.username && (
+      <button
+        onClick={() => {
           setEditingSkills(true);
           setNewSkills(profile.skills || []);
-        }} className="px-2 text-white rounded text-xs" title="Add/Remove Skills">
-          <Image src="/edit.svg" alt="Edit" width={15} height={15} />
-        </button>
-      )}
-    </div>
-  )}
+        }}
+        className="flex items-center justify-center p-2 rounded-full hover:bg-purple-attention transition"
+        title="Edit Skills"
+      >
+        <Image src="/edit.svg" alt="Edit" width={16} height={16} />
+      </button>
+    )}
+  </div>
+)}
+
+
 </div>
 </div>
 </div>
@@ -713,7 +787,7 @@ export default function ProfilePage() {
     <>
       <input
         type="text"
-        className="border px-2 py-1 rounded text-xs text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        className="w-[280px] bg-gray-input text-base rounded px-3 py-2 border border-gray-300 text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple"
         value={newPortfolio}
         onChange={e => setNewPortfolio(e.target.value)}
         disabled={savingPortfolio}
@@ -733,12 +807,12 @@ export default function ProfilePage() {
             .single();
           if (!error && data) setProfile(data);
         }}
-        className="ml-1 px-2 py-1 bg-purple text-white rounded hover:bg-purple-attention text-xs"
+        className="bg-purple text-white text-sm px-4 py-2 rounded hover:bg-purple-attention transition disabled:opacity-50"
         disabled={savingPortfolio}
       >Save</button>
       <button
         onClick={() => setEditingPortfolio(false)}
-        className="ml-1 px-2 py-1 bg-purple-attention text-purple rounded hover:bg-purple text-xs"
+        className="bg-gray-200 text-gray-800 text-sm px-4 py-2 rounded hover:bg-gray-300 transition disabled:opacity-50"
         disabled={savingPortfolio}
       >Cancel</button>
     </>
@@ -783,7 +857,7 @@ export default function ProfilePage() {
       }}
     />
     <button
-      className="mt-2 px-3 py-1 bg-purple text-white rounded hover:bg-purple-attention text-xs"
+      className="mt-2 bg-purple text-white text-sm px-4 py-2 rounded hover:bg-purple-attention transition disabled:opacity-50"
       onClick={() => setShowAddExperience(false)}
     >
       ← Back
