@@ -1,15 +1,12 @@
 'use client';
+/* eslint-disable */
 
 import { supabase } from '@/app/lib/supabase';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Sidebar from '../components/Sidebar';
 import NotificationBell from '../components/NotificationBell';
-import ProfilePreview from '../components/ProfilePreview';
 import ChatPanel from '../components/ChatPanel';
 import JobCard from '../components/JobCard';
-import ApplicationCard from '../components/ApplicationCard';
-import Link from 'next/link';
 
 type Job = {
   job_id: string;
@@ -25,6 +22,7 @@ type Job = {
 type Application = {
   application_id: string;
   job: Job;
+
   status: 'pending' | 'interviewing' | 'hired' | 'rejected';
   cover_letter: string;
   fees: number;
@@ -57,7 +55,6 @@ export default function FreelancerDashboard() {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [activeTab, setActiveTab] = useState<'applied' | 'saved' | 'reviews'>('applied');
-  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -84,24 +81,45 @@ export default function FreelancerDashboard() {
           .select('application_id, status, cover_letter, fees, time_range, created_at, job:job_id(*)')
           .eq('applicant_uid', user.id);
         if (appsError) throw appsError;
-        setApplications(apps || []);
+        setApplications(
+          (apps || []).map((app: any) => ({
+            ...app,
+            job: Array.isArray(app.job) ? app.job[0] : app.job,
+          }))
+        );
         // Fetch bookmarks
         const { data: bms, error: bmsError } = await supabase
           .from('bookmarks')
           .select('bookmark_id, job:job_id(*)')
           .eq('user_id', user.id);
         if (bmsError) throw bmsError;
-        setBookmarks(bms || []);
+        setBookmarks(
+          (bms || []).map((bm: any) => ({
+            ...bm,
+            job: Array.isArray(bm.job) ? bm.job[0] : bm.job,
+          }))
+        );
         // Fetch reviews
         const { data: revs, error: revsError } = await supabase
           .from('reviews')
           .select('review_id, rating, review, created_at, reviewer:reviewer_uid(*), job:job_id(title)')
           .eq('reviewee_uid', user.id);
         if (revsError) throw revsError;
-        setReviews(revs || []);
-      } catch (err: any) {
-        setError(err.message || 'Unknown error');
-      } finally {
+        setReviews(
+          (revs || []).map((rev: any) => ({
+            ...rev,
+            reviewer: Array.isArray(rev.reviewer) ? rev.reviewer[0] : rev.reviewer,
+            job: Array.isArray(rev.job) ? rev.job[0] : rev.job,
+          }))
+        );
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message || 'Unknown error');
+        } else {
+          setError(String(err));
+        }
+      }
+      finally {
         setLoading(false);
       }
     };
@@ -127,7 +145,7 @@ export default function FreelancerDashboard() {
     <Sidebar />
       <main className="flex-1 p-4 md:p-8">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
-          <h1 className="yatra-one-text text-2xl md:text-4xl text-heading font-bold">Freelancer Dashboard</h1>
+          <h1 className="yatra-one-text text-2xl md:text-4xl text-purple font-bold">Freelancer Dashboard</h1>
           <div className="flex items-center gap-3 flex-wrap">
             {userId && <NotificationBell userId={userId} />}
           </div>
@@ -149,9 +167,9 @@ export default function FreelancerDashboard() {
           </div>
           {activeTab === 'applied' && (
             <section>
-              <h2 className="text-xl font-semibold mb-4">Jobs You've Applied To</h2>
+              <h2 className="text-xl font-semibold mb-4">Jobs You&apos;ve Applied To</h2>
               {applications.length === 0 ? (
-                <div className="text-gray-500">You haven't applied to any jobs yet.</div>
+                <div className="text-gray-500">You haven&apos;t applied to any jobs yet.</div>
               ) : (
                 applications.map((app) => (
                   <div key={app.application_id} className="relative mb-6">
@@ -197,12 +215,6 @@ export default function FreelancerDashboard() {
                           </div>
                           <div className="flex gap-3 items-center mt-4">
                             <button
-                              className="px-4 py-1.5 rounded-lg bg-purple-attention text-white text-xs font-semibold shadow-sm hover:bg-purple transition"
-                              onClick={() => {
-                                if (app.job?.client_uid) setOpenChatWithUserId(app.job.client_uid);
-                              }}
-                            >Message Client</button>
-                            <button
                               className="px-4 py-1.5 rounded-lg bg-red text-white text-xs font-semibold shadow-sm hover:bg-red-700 transition"
                               onClick={async () => {
                                 if (!window.confirm('Are you sure you want to delete this application?')) return;
@@ -214,9 +226,14 @@ export default function FreelancerDashboard() {
                                     .eq('application_id', app.application_id);
                                   if (error) throw error;
                                   setApplications(prev => prev.filter(a => a.application_id !== app.application_id));
-                                } catch (err: any) {
-                                  setError(err.message || 'Could not delete application');
-                                } finally {
+                                } catch (err) {
+                                  if (err instanceof Error) {
+                                    setError(err.message || 'Could not delete application');
+                                  } else {
+                                    setError(String(err));
+                                  }
+                                }
+                                finally {
                                   setLoading(false);
                                 }
                               }}

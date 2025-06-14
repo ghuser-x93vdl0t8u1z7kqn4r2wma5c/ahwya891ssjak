@@ -11,7 +11,9 @@ interface ChatPanelProps {
 }
 
 export default function ChatPanel({ userId, openChatWithUserId, onCloseChat }: ChatPanelProps) {
+  // eslint-disable-next-line
   const [chats, setChats] = useState<any[]>([]);
+  // eslint-disable-next-line
   const [partners, setPartners] = useState<{[chatId: string]: any}>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,7 +24,7 @@ export default function ChatPanel({ userId, openChatWithUserId, onCloseChat }: C
     const ensureChat = async () => {
       if (!openChatWithUserId) return;
       // Find the chat with this user
-      let chat = chats.find(c =>
+      const chat = chats.find(c =>
         (c.user_1_uid === userId && c.user_2_uid === openChatWithUserId) ||
         (c.user_2_uid === userId && c.user_1_uid === openChatWithUserId)
       );
@@ -33,6 +35,7 @@ export default function ChatPanel({ userId, openChatWithUserId, onCloseChat }: C
         // Auto-create chat if not exists
         try {
           setLoading(true);
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { data, error } = await supabase
             .from('chats')
             .insert({ user_1_uid: userId, user_2_uid: openChatWithUserId })
@@ -52,8 +55,12 @@ export default function ChatPanel({ userId, openChatWithUserId, onCloseChat }: C
             (c.user_2_uid === userId && c.user_1_uid === openChatWithUserId)
           );
           if (created) setSelectedChat(created);
-        } catch (err: any) {
-          setError(err.message || 'Could not create chat');
+        } catch (err) {
+          if (err instanceof Error) {
+            setError(err.message || 'Could not create chat');
+          } else {
+            setError(String(err));
+          }
         } finally {
           setLoading(false);
         }
@@ -61,7 +68,9 @@ export default function ChatPanel({ userId, openChatWithUserId, onCloseChat }: C
     };
     if (openChatWithUserId) ensureChat();
   }, [openChatWithUserId, chats, userId]);
+  // eslint-disable-next-line
   const [selectedChat, setSelectedChat] = useState<any | null>(null);
+  // eslint-disable-next-line
   const [messages, setMessages] = useState<any[]>([]);
   const [msgLoading, setMsgLoading] = useState(false);
   const [msgError, setMsgError] = useState<string | null>(null);
@@ -75,7 +84,7 @@ export default function ChatPanel({ userId, openChatWithUserId, onCloseChat }: C
   useEffect(() => {
     const fetchChats = async () => {
       try {
-        setLoading(true);
+        setLoading(true); 
         const { data, error } = await supabase
           .from('chats')
           .select('*')
@@ -84,6 +93,7 @@ export default function ChatPanel({ userId, openChatWithUserId, onCloseChat }: C
         if (error) throw error;
         setChats(data || []);
         // Fetch partner info for each chat
+        // eslint-disable-next-line
         const userIds = (data || []).map((c: any) => c.user_1_uid === userId ? c.user_2_uid : c.user_1_uid);
         // Also include openChatWithUserId if not already in userIds
         if (openChatWithUserId && !userIds.includes(openChatWithUserId)) userIds.push(openChatWithUserId);
@@ -93,20 +103,28 @@ export default function ChatPanel({ userId, openChatWithUserId, onCloseChat }: C
             .select('id, username, profile_picture_url')
             .in('id', userIds);
           if (usersError) throw usersError;
+          // eslint-disable-next-line
           const partnersObj: {[chatId: string]: any} = {};
+          // eslint-disable-next-line
           (data || []).forEach((c: any) => {
             const partnerId = c.user_1_uid === userId ? c.user_2_uid : c.user_1_uid;
+            // eslint-disable-next-line
             partnersObj[c.chat_id] = users.find((u: any) => u.id === partnerId);
           });
           // Add openChatWithUserId as a special "pending" partner if not in any chat
           if (openChatWithUserId) {
+            // eslint-disable-next-line
             const pendingPartner = users.find((u: any) => u.id === openChatWithUserId);
             if (pendingPartner) partnersObj['pending'] = pendingPartner;
           }
           setPartners(partnersObj);
         }
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError(String(err));
+        }
       } finally {
         setLoading(false);
       }
@@ -149,7 +167,7 @@ export default function ChatPanel({ userId, openChatWithUserId, onCloseChat }: C
     };
     fetchMessages();
   }, [selectedChat]);
-
+  
   // Send a message
   const handleSend = async () => {
     if (!newMessage.trim() || !selectedChat) return;
@@ -180,9 +198,14 @@ export default function ChatPanel({ userId, openChatWithUserId, onCloseChat }: C
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
-    } catch (err: any) {
-      setMsgError(err.message);
-    } finally {
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(String(err));
+      }
+    }
+     finally {
       setSending(false);
     }
   };
@@ -325,7 +348,7 @@ export default function ChatPanel({ userId, openChatWithUserId, onCloseChat }: C
               {chats.map(chat => (
   <div
     key={chat.chat_id}
-    className="p-2 border rounded cursor-pointer hover:bg-gray-100 flex items-center gap-2"
+    className="p-2 border rounded cursor-pointer hover:bg-gray-100 flex flex-col items-start gap-2"
     onClick={() => setSelectedChat(chat)}
   >
     <Link
@@ -348,7 +371,32 @@ export default function ChatPanel({ userId, openChatWithUserId, onCloseChat }: C
         <div className="font-medium text-sm hover:underline">{partners[chat.chat_id]?.username || 'Unknown'}</div>
       </div>
     </Link>
-    <div className="text-xs text-gray-500 ml-2">Chat ID: {chat.chat_id}</div>
+    <div className="text-xs text-gray-500 ml-2 truncate max-w-[16rem]">
+  {(() => {
+    const lastMessage = messages
+      .filter(m => m.chat_id === chat.chat_id)
+      .slice(-1)[0];
+
+    if (!lastMessage) return 'No messages yet';
+
+    try {
+      const partnerId = chat.user_1_uid === userId ? chat.user_2_uid : chat.user_1_uid;
+      let key = CryptoJS.SHA256(userId + partnerId).toString();
+      let bytes = CryptoJS.AES.decrypt(lastMessage.message, key);
+      let decrypted = bytes.toString(CryptoJS.enc.Utf8);
+      if (!decrypted) {
+        // Try reverse
+        key = CryptoJS.SHA256(partnerId + userId).toString();
+        bytes = CryptoJS.AES.decrypt(lastMessage.message, key);
+        decrypted = bytes.toString(CryptoJS.enc.Utf8);
+      }
+      return decrypted || '[Encrypted]';
+    } catch {
+      return '[Encrypted]';
+    }
+  })()}
+</div>
+
   </div>
 ))}
 </div>

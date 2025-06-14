@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/app/lib/supabase';
 
 export default function NotificationBell({ userId }: { userId: string }) {
+  // eslint-disable-next-line
   const [notifications, setNotifications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,8 +18,12 @@ export default function NotificationBell({ userId }: { userId: string }) {
           .order('created_at', { ascending: false });
         if (error) throw error;
         setNotifications(data || []);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError(String(err));
+        }
       } finally {
         setLoading(false);
       }

@@ -27,7 +27,7 @@ export default function FindTalent() {
                 without the hassle
               </h2>
               <p className="text-lg text-white/90 max-w-xl">
-                Work with Nepal's first freelance and creator network. Lahara connects you with skilled professionals ready to help your business grow.
+                Work with Nepal&apos;s first freelance and creator network. Lahara connects you with skilled professionals ready to help your business grow.
               </p>
             </div>
 

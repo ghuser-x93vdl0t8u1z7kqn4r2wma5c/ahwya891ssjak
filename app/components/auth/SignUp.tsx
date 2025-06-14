@@ -29,8 +29,12 @@ export default function SignUp() {
       
       // Show success message
       alert('Please check your email for verification link');
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError(String(error));
+      }
     } finally {
       setLoading(false);
     }
@@ -45,8 +49,12 @@ export default function SignUp() {
         },
       });
       if (error) throw error;
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError(String(error));
+      }
     }
   };
 

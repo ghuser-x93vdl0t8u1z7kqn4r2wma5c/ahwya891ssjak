@@ -137,7 +137,7 @@ export default function CategoryPage() {
               No freelancers found
             </h3>
             <p className="text-gray-500">
-              We couldn't find any freelancers specializing in {category}.
+              We couldn&apos;t find any freelancers specializing in {category}.
             </p>
           </div>
         )}

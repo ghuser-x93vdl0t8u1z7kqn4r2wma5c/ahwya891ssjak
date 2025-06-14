@@ -1,8 +1,10 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/app/lib/supabase";
+import Sidebar from "../components/Sidebar";
 
 export default function WalletTopup() {
+  // eslint-disable-next-line
   const [user, setUser] = useState<any>(null);
   const [username, setUsername] = useState("");
   const [amount, setAmount] = useState("");
@@ -66,18 +68,23 @@ export default function WalletTopup() {
 
       setSubmitted(true);
     } catch (err) {
-      alert("Failed: " + (err as any).message);
+      alert("Failed: " + (err instanceof Error ? err.message : 'Unknown error'));
     } finally {
       setUploading(false);
     }
   };
 
   return (
-    <div className="max-w-lg mx-auto p-8">
-      <h1 className="text-2xl font-bold mb-4">Wallet Top Up Request</h1>
+    <div className="m-auto flex w-full h-full flex-row justify-between gap-2">
+    <div className="w-fit h-full">
+      <Sidebar />
+    </div>
+    <div className="md:max-w-2xl md:w-full w-full max-w-lg mx-auto p-8">
+     <h1 className="text-4xl font-bold text-purple yatra-one-text mb-6">Wallet Top Up Request</h1>
+
       <ol className="mb-4 text-sm bg-yellow-50 p-3 rounded">
         <li>1. Enter the amount you want to top up.</li>
-        <li>2. Send the money to admin's eSewa: <b>9869606609</b>.</li>
+        <li>2. Send the money to admin&apos;s eSewa: <b>9869606609</b>.</li>
         <li>
           3. In eSewa remarks, enter your username: <b>{username}</b>.
         </li>
@@ -136,6 +143,7 @@ export default function WalletTopup() {
           </button>
         </form>
       )}
+    </div>
     </div>
   );
 }

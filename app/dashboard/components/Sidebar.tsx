@@ -49,19 +49,20 @@ export default function Sidebar() {
     { href: '/', label: 'Home' },
     { href: profile ? `/profile/${profile.username}` : '#', label: 'Profile', isLink: true },
     { href: '/dashboard/', label: 'Dashboard' },
-    { href: '/dashboard/post_work', label: 'Post Work' },
+    { href: '/dashboard/client/create-job', label: 'Post New Job' },
     { href: '/dashboard/wallet', label: 'Wallet' },
     { href: '/dashboard/topup', label: 'Topup' },
+    { href: '/dashboard/transactions', label: 'Transactions' },
     { href: '/dashboard/withdraw', label: 'Withdraw' },
   ];
 
   const links = profile?.account_type === 'business' ? businessLinks : freelancerLinks;
 
   return (
-    <>
+    <div className="bg-green-dark">
       {/* Hamburger for small screens */}
       <button
-        className="md:hidden flex flex-col justify-center items-center w-10 h-10 bg-green-light border rounded shadow"
+        className="md:hidden absolute top-4 left-4 w-10 h-10 bg-green-light border rounded shadow"
         onClick={() => setOpen(!open)}
         aria-label="Open sidebar"
       >
@@ -69,7 +70,7 @@ export default function Sidebar() {
       </button>
       {/* Sidebar */}
       <aside
-        className={`fixed md:static top-0 left-0 z-40 min-h-screen w-64 bg-green-light border-r p-4 transform transition-transform duration-200 ease-in-out
+        className={`fixed md:static top-0 left-0 z-40 h-full min-h-screen w-64 bg-green-dark border-r p-4 transform transition-transform duration-200 ease-in-out
           ${open ? 'translate-x-0 flex' : '-translate-x-full'} md:translate-x-0 md:flex flex-col hidden`}
       >
         <div className="mb-8 bg-white border-1 border-purple-attention rounded-lg">
@@ -93,7 +94,7 @@ export default function Sidebar() {
             link.isLink ? (
               <Link
                 key={idx}
-                className="block yatra-one-text bold px-3 py-2 rounded text-purple hover:bg-purple hover:purple-attention transition font-semibold"
+                className="block yatra-one-text bold px-3 py-2 rounded text-white hover:bg-purple hover:purple-attention transition font-semibold"
                 href={link.href}
               >
                 {link.label}
@@ -101,7 +102,7 @@ export default function Sidebar() {
             ) : (
               <a
                 key={idx}
-                className="block yatra-one-text bold px-3 py-2 rounded text-purple hover:bg-purple hover:purple-attention transition font-semibold"
+                className="block yatra-one-text bold px-3 py-2 rounded text-white hover:bg-purple hover:purple-attention transition font-semibold"
                 href={link.href}
               >
                 {link.label}
@@ -119,6 +120,6 @@ export default function Sidebar() {
           
       </div>
       )}
-    </>
+    </div>
   );
 }

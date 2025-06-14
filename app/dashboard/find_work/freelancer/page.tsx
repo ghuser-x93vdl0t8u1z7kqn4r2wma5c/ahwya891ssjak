@@ -1,26 +1,25 @@
 'use client';
-
+/* eslint-disable */
 import { supabase } from '@/app/lib/supabase';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Sidebar from '../../components/Sidebar';
-import NotificationBell from '../../components/NotificationBell';
-import ProfilePreview from '../../components/ProfilePreview';
 import ChatPanel from '../../components/ChatPanel';
 import JobCard from '../../components/JobCard';
-import Link from 'next/link';
 
 type Job = {
   job_id: string;
   title: string;
   budget: number;
+  pricing_type?: string; // New optional field for budget type
   estimated_time_range: string;
+  description: string;
   required_skills: string[];
   created_at: string;
   client?: { display_name: string; profile_picture_url: string | null };
 };
 
 export default function FindWorkFreelancer() {
+  // eslint-disable-next-line
   const [profile, setProfile] = useState<any>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,7 +31,6 @@ export default function FindWorkFreelancer() {
   const [filterBudgetMin, setFilterBudgetMin] = useState('');
   const [filterBudgetMax, setFilterBudgetMax] = useState('');
   const [showAll, setShowAll] = useState(false);
-  const router = useRouter();
 
   const skillsList = [
     'Web Development', 'Mobile App Development', 'UI/UX Design', 'Graphic Design',
@@ -45,7 +43,9 @@ export default function FindWorkFreelancer() {
   ];
 
   const timeRanges = [
-    '1 day', '3 days', '1 week', '2 weeks', '1 month', '2 months', '3+ months'
+    '1 hour', '2 hours', '4 hours', '8 hours', '12 hours',
+    '1 day', '2 days', '3 days', '1 week', '2 weeks',
+    '1 month', '2 months', '3+ months'
   ];
 
   useEffect(() => {
@@ -198,6 +198,15 @@ export default function FindWorkFreelancer() {
     }
     setFilteredJobs(filtered);
   };
+  // Helper function for budget display
+  const formatBudget = (job: Job) => {
+    if (!job.budget) return 'NPR 0';
+    if (job.pricing_type === 'hourly') {
+      return `NPR ${job.budget}/hr`;
+    } else {
+      return `NPR ${job.budget}/project`;
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-green-light">
@@ -282,70 +291,113 @@ export default function FindWorkFreelancer() {
           ) : (
             filteredJobs.map((job) => (
               <JobCard key={job.job_id} job={job}>
-                <button
-                  className=" px-4 py-1.5 text-xs rounded-lg bg-purple-attention text-white font-semibold shadow-sm hover:bg-purple transition disabled:opacity-60"
-                  onClick={() => openApplyModal(job)}
-                  disabled={appliedJobs.includes(job.job_id)}
-                >{appliedJobs.includes(job.job_id) ? 'Applied' : 'Apply'}</button>
+                <div className="flex justify-between items-center w-full">
+                  <span className="text-sm font-semibold text-gray-700">{formatBudget(job)}</span>
+                  <button
+                    className="px-4 py-1.5 text-xs rounded-lg bg-purple-attention text-white font-semibold shadow-sm hover:bg-purple transition disabled:opacity-60"
+                    onClick={() => openApplyModal(job)}
+                    disabled={appliedJobs.includes(job.job_id)}
+                  >{appliedJobs.includes(job.job_id) ? 'Applied' : 'Apply'}</button>
+                </div>
               </JobCard>
             ))
           )}
 
           {/* Application Modal */}
           {showApplyModal && applyingJob && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-              <form className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative border-1 border-purple-attention" onSubmit={handleApplySubmit}>
-                <button type="button" className="absolute top-2 right-2 text-purple-attention hover:text-purple" onClick={() => setShowApplyModal(false)}>&times;</button>
-                <h3 className="text-lg font-semibold mb-4">Apply to {applyingJob.title}</h3>
-                <div className="mb-3">
-                  <label className="block text-sm font-medium mb-1">Your Skills</label>
-                  <div className="border px-2 py-1 rounded w-full bg-gray-50 text-gray-700">
-                    {Array.isArray(profile?.skills) && profile.skills.length > 0 ? profile.skills.join(', ') : 'No skills listed'}
-                    {profile?.main_skill && (!profile.skills || !profile.skills.includes(profile.main_skill)) ? `, ${profile.main_skill}` : ''}
-                  </div>
-                </div>
-                <div className="mb-3">
-                  <label className="block text-sm font-medium mb-1">Fees (your bid)</label>
-                  <input
-                    type="number"
-                    className="border px-2 py-1 rounded w-full"
-                    value={applicationFees}
-                    onChange={e => setApplicationFees(e.target.value)}
-                    placeholder="Enter your bid amount"
-                    required
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="block text-sm font-medium mb-1">Estimated Time</label>
-                  <input
-                    type="text"
-                    className="border px-2 py-1 rounded w-full"
-                    value={applicationTime}
-                    onChange={e => setApplicationTime(e.target.value)}
-                    placeholder="e.g. 1 week, 2 months"
-                    required
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="block text-sm font-medium mb-1">Cover Letter</label>
-                  <textarea
-                    className="border px-2 py-1 rounded w-full"
-                    value={applicationCoverLetter}
-                    onChange={e => setApplicationCoverLetter(e.target.value)}
-                    rows={4}
-                    placeholder="Write a brief cover letter..."
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="bg-purple-attention text-white px-4 py-2 rounded-lg font-semibold shadow-sm hover:bg-purple transition w-full mt-2"
-                  disabled={loading}
-                >{loading ? 'Applying...' : 'Submit Application'}</button>
-                {error && <div className="text-red-600 mt-2">{error}</div>}
-                {applicationSuccess && <div className="text-green-600 mt-2">{applicationSuccess}</div>}
-              </form>
-            </div>
-          )}
+           <div className="fixed inset-0 h-full w-full z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+           <form
+             onSubmit={handleApplySubmit}
+             className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-4xl relative border border-purple-attention animate-fade-in flex gap-8 max-h-[80vh]"
+           >
+             {/* Close Button */}
+             <button
+               type="button"
+               className="absolute top-3 right-3 text-purple-attention hover:text-purple text-2xl font-bold"
+               onClick={() => setShowApplyModal(false)}
+             >
+               &times;
+             </button>
+         
+             {/* Left: Job Info */}
+             <section className="flex-1 bg-purple-50 p-6 rounded-lg border border-purple-200 text-gray-700 overflow-auto max-h-[70vh]">
+               <h3 className="text-2xl font-bold text-purple-attention mb-4">{applyingJob.title}</h3>
+               <div className="mb-2">
+                 <strong>Budget:</strong> NPR {applyingJob.budget} {applyingJob.pricing_type === 'hourly' ? '/hr' : '/project'}
+               </div>
+               <div className="mb-2"><strong>Estimated Time:</strong> {applyingJob.estimated_time_range || 'N/A'}</div>
+               <div className="mb-2"><strong>Skills Required:</strong> {applyingJob.required_skills?.join(', ') || 'N/A'}</div>
+               <div className="mb-4"><strong>Description:</strong> {applyingJob.description || 'No description provided.'}</div>
+             </section>
+         
+             {/* Right: Application Form */}
+             <section className="flex-1 max-w-md p-2 overflow-auto max-h-[70vh]">
+               <h3 className="text-xl font-semibold text-gray-800 mb-6">
+                 Apply to <span className="text-purple-attention">{applyingJob.title}</span>
+               </h3>
+         
+               {/* Fees Input */}
+               <div className="mb-4">
+                 <label className="block text-sm font-medium text-gray-700 mb-1">
+                   What’s your rate {applyingJob.pricing_type === 'hourly' ? 'per hour' : 'for the entire project'} in NPR?
+                 </label>
+                 <input
+                   type="number"
+                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-attention"
+                   value={applicationFees}
+                   onChange={e => setApplicationFees(e.target.value)}
+                   placeholder="Enter your rate"
+                   required
+                 />
+               </div>
+         
+               {/* Time Input */}
+               <div className="mb-4">
+                 <label className="block text-sm font-medium text-gray-700 mb-1">Estimated Time</label>
+                 <select
+                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-attention"
+                   value={applicationTime}
+                   onChange={e => setApplicationTime(e.target.value)}
+                   required
+                 >
+                   <option value="" disabled>Select estimated time</option>
+                   {timeRanges.map(range => (
+                     <option key={range} value={range}>{range}</option>
+                   ))}
+                 </select>
+               </div>
+         
+               {/* Cover Letter */}
+               <div className="mb-4">
+                 <label className="block text-sm font-medium text-gray-700 mb-1">Cover Letter</label>
+                 <textarea
+                   className="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-purple-attention"
+                   value={applicationCoverLetter}
+                   onChange={e => setApplicationCoverLetter(e.target.value)}
+                   rows={6}
+                   placeholder="Write a brief cover letter..."
+                 />
+               </div>
+         
+               {/* Submit Button */}
+               <button
+                 type="submit"
+                 disabled={loading}
+                 className="w-full bg-purple-attention hover:bg-purple text-white font-semibold py-2 rounded-lg transition"
+               >
+                 {loading ? 'Applying...' : 'Submit Application'}
+               </button>
+         
+               {/* Messages */}
+               {error && <div className="text-red-600 mt-3 text-sm">{error}</div>}
+               {applicationSuccess && <div className="text-green-600 mt-3 text-sm">{applicationSuccess}</div>}
+             </section>
+           </form>
+         </div>
+         
+)}
+
+
         </section>
       </main>
       {/* Mini Chat Panel */}

@@ -35,7 +35,7 @@ const DashboardPage = () => {
   if (loading) return <div>Loading dashboard...</div>;
   if (accountType === 'business') return <ClientDashboard />;
   if (accountType === 'freelancer') return <FreelancerDashboard />;
-  return <div>Account type not recognized or user not logged in.</div>;
+  return <div>Account type not recognized.</div>;
 };
 
 export default DashboardPage;

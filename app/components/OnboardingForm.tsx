@@ -48,8 +48,12 @@ export default function OnboardingForm() {
 
       // Redirect to dashboard after successful update
       router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(String(err));
+      }
     } finally {
       setLoading(false);
     }
@@ -63,7 +67,7 @@ export default function OnboardingForm() {
             Welcome to Lahara!
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Let's set up your profile
+            Let&apos;s set up your profile
           </p>
         </div>
 
@@ -108,7 +112,7 @@ export default function OnboardingForm() {
             {accountType === 'freelancer' && (
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700">
-                  What's your main skill?
+                  What&apos;s your main skill?
                 </label>
                 <select
                   value={mainSkill}

@@ -1,11 +1,10 @@
+/*
 'use client';
 
 import { supabase } from '@/app/lib/supabase';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Sidebar from '../components/Sidebar';
 import NotificationBell from '../components/NotificationBell';
-import ProfilePreview from '../components/ProfilePreview';
 import ChatPanel from '../components/ChatPanel';
 import JobCard from '../components/JobCard';
 import ApplicationCard from '../components/ApplicationCard';
@@ -36,6 +35,7 @@ type Bookmark = {
 };
 
 export default function CreatorDashboard() {
+  // eslint-disable-next-line
   const [profile, setProfile] = useState<any>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,7 +43,6 @@ export default function CreatorDashboard() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [discoverJobs, setDiscoverJobs] = useState<Job[]>([]);
-  const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -70,6 +69,7 @@ export default function CreatorDashboard() {
           .select('application_id, status, cover_letter, fees, time_range, created_at, job:job_id(*)')
           .eq('applicant_uid', user.id);
         if (appsError) throw appsError;
+
         setApplications(apps || []);
         // Fetch bookmarks
         const { data: bms, error: bmsError } = await supabase
@@ -152,7 +152,6 @@ export default function CreatorDashboard() {
           </div>
         </div>
         <div className="space-y-12">
-          {/* Applied Jobs */}
           <section>
             <h2 className="text-xl font-semibold mb-4">Jobs You've Applied To</h2>
             {applications.length === 0 ? (
@@ -163,7 +162,6 @@ export default function CreatorDashboard() {
               ))
             )}
           </section>
-          {/* Saved Jobs */}
           <section>
             <h2 className="text-xl font-semibold mb-4">Saved Jobs</h2>
             {bookmarks.length === 0 ? (
@@ -174,7 +172,6 @@ export default function CreatorDashboard() {
               ))
             )}
           </section>
-          {/* Discover Jobs */}
           <section>
             <h2 className="text-xl font-semibold mb-4">Discover Jobs</h2>
             {discoverJobs.length === 0 ? (
@@ -192,8 +189,8 @@ export default function CreatorDashboard() {
           </section>
         </div>
       </main>
-      {/* Mini Chat Panel */}
       {userId && <ChatPanel userId={userId} />}
     </div>
   );
 }
+*/

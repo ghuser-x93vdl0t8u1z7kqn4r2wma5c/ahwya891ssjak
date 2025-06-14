@@ -1,6 +1,6 @@
 
 'use client';
-
+/* eslint-disable */
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
@@ -28,21 +28,13 @@ type Profile = {
 };
 
 const predefinedSkills = [
-  "Web Development",
-  "Mobile Development",
-  "UI/UX Design",
-  "Graphic Design",
-  "Copywriting",
-  "SEO",
-  "Marketing",
-  "Project Management",
-  "Data Analysis",
-  "Machine Learning",
-  "DevOps",
-  "QA Testing",
-  "Translation",
-  "Video Editing",
-  "Photography"
+  'Web Development', 'Mobile App Development', 'UI/UX Design', 'Graphic Design',
+    'Content Writing', 'Digital Marketing', 'SEO', 'Social Media Management',
+    'Video Editing', 'Photography', 'Data Analysis', 'Project Management',
+    'Copywriting', 'Translation', 'Voice Over', 'Animation', '3D Modeling',
+    'WordPress Development', 'E-commerce', 'Email Marketing', 'Brand Design',
+    'Logo Design', 'Illustration', 'Game Development', 'Machine Learning',
+    'DevOps', 'Cloud Computing', 'Cybersecurity', 'Business Consulting'
 ];
 
 export default function ProfilePage() {

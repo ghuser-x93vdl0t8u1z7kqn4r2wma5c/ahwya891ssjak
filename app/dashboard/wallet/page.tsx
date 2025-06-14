@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable */
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/app/lib/supabase";
 import { hashPassword, verifyPassword } from "./bcrypt";
@@ -351,7 +352,7 @@ export default function WalletPage() {
 
   return (
     <div className="flex flex-row justify-between gap-2">
-      <div className="w-fit p-4">
+      <div className="w-fit h-full">
     <Sidebar />
     </div>
     <div className="w-full mx-auto p-4">
@@ -514,118 +515,181 @@ export default function WalletPage() {
 
       )}
       {wallet && !showPasswordPrompt && !showSetPassword && (
-        <>
-          <div className="mb-6 p-4 border rounded bg-green-50">
-            <div className="text-lg font-semibold">Balance: <span className="font-mono">{wallet?.token_balance || 0}</span></div>
-          </div>
-          <div className="mb-6 p-4 border rounded">
-            <h2 className="font-semibold mb-2">Transfer Funds</h2>
-            <input
-              type="text"
-              className="border px-2 py-1 rounded mr-2"
-              value={searchUsername}
-              onChange={async e => {
-                const input = e.target.value;
-                setSearchUsername(input);
-                setRecipientUser(null);
-                if (input.length < 2) {
-                  setUsernameSuggestions([]);
-                  setRecipientError('');
-                  return;
-                }
-                setRecipientLoading(true);
-                const { data, error } = await supabase
-                  .from('users')
-                  .select('id, username')
-                  .ilike('username', `%${input}%`)
-                  .limit(5);
-                setRecipientLoading(false);
-                if (error || !data) {
-                  setUsernameSuggestions([]);
-                  setRecipientError('No user found');
-                } else {
-                  setUsernameSuggestions(data);
-                  // Live error if no exact match in suggestions
-                  if (!data.some(u => u.username === input)) {
-                    setRecipientError('Please select a valid recipient username from the list.');
-                  } else {
-                    setRecipientError('');
-                  }
-                }
-              }}
-              placeholder="Search recipient username"
-              disabled={actionLoading}
-              autoComplete="off"
-            />
-            {recipientLoading && <span className="text-sm text-gray-500 ml-2">Searching...</span>}
-            {usernameSuggestions.length > 0 && (
-              <ul className="border rounded bg-white shadow mt-1 max-h-32 overflow-y-auto text-sm">
-                {usernameSuggestions.map(user => (
-                  <li key={user.id} className="px-2 py-1 cursor-pointer hover:bg-blue-50" onClick={() => {
-                    setRecipientUser(user);
-                    setSearchUsername(user.username);
-                    setUsernameSuggestions([]);
-                    setRecipientError("");
-                  }}>
-                    <a href={`/profile/${user.username}`} className="underline text-blue-600 mr-2" target="_blank" rel="noopener noreferrer">{user.username}</a>
-                    <span className="text-gray-500">({user.id.slice(0, 6)}...)</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-            {recipientUser && (
-              <div className="text-sm mt-1 text-green-700">
-                Recipient: <a href={`/profile/${recipientUser.username}`} className="underline text-blue-600" target="_blank" rel="noopener noreferrer">{recipientUser.username}</a>
-              </div>
-            )}
-            {recipientError && <div className="text-sm text-red-600 mt-1">{recipientError}</div>}
-            <input
-              type="number"
-              min="1"
-              className="border px-2 py-1 rounded mr-2 mt-2"
-              value={transferAmount}
-              onChange={e => setTransferAmount(e.target.value)}
-              placeholder="Amount"
-              disabled={actionLoading}
-            />
-            {/* Inline password prompt for transfer */}
-            {pendingAction === 'transfer' && (
-              <span className="ml-2 flex flex-col sm:flex-row items-start sm:items-center gap-2 mt-2">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  className="border px-2 py-1 rounded"
-                  value={passwordInput}
-                  onChange={e => setPasswordInput(e.target.value)}
-                  placeholder="Wallet Password"
-                  autoFocus
-                />
-                <button
-                  className="px-2 py-1 rounded bg-blue-500 text-white"
-                  onClick={handlePasswordSubmit}
-                  disabled={actionLoading || !passwordInput}
-                >
-                  Submit
-                </button>
-                <button
-                  type="button"
-                  className="ml-1 text-xs text-gray-600 underline"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? "Hide" : "Show"}
-                </button>
-                {passwordError && <span className="text-red-600 text-xs ml-2">{passwordError}</span>}
-              </span>
-            )}
-            <button
-              className={`px-3 py-1 rounded ${transferCooldown > 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white'}`}
-              onClick={handleTransfer}
-              disabled={actionLoading || !transferAmount || transferCooldown > 0}
-            >
-              {transferCooldown > 0 ? `Wait ${transferCooldown}s` : 'Transfer'}
-            </button>
-          </div>
-
-        </>
+       <>
+       <div className="flex flex-col md:flex-row gap-6">
+         {/* Left Side: Transfer Section */}
+         <div className="flex-1">
+           {/* Balance Box */}
+           <div className="mb-6 p-4 border border-green-button rounded bg-green-light text-green-dark shadow-sm">
+             <div className="text-lg font-semibold">
+               Balance: <span className="font-mono">{wallet?.token_balance || 0}</span>
+             </div>
+           </div>
+     
+           {/* Transfer Card */}
+           <div className="mb-6 p-6 border border-gray-input-border rounded bg-white shadow-md">
+             <h2 className="text-heading font-semibold mb-4 text-lg">Transfer Funds</h2>
+     
+             {/* Username Search */}
+             <label className="block text-sm font-medium text-heading mb-1">Search Recipient</label>
+             <input
+               type="text"
+               className="w-full border border-gray-input-border bg-gray-input text-heading px-3 py-2 rounded mb-2"
+               value={searchUsername}
+               onChange={async e => {
+                 const input = e.target.value;
+                 setSearchUsername(input);
+                 setRecipientUser(null);
+                 if (input.length < 2) {
+                   setUsernameSuggestions([]);
+                   setRecipientError('');
+                   return;
+                 }
+                 setRecipientLoading(true);
+                 const { data, error } = await supabase
+                   .from('users')
+                   .select('id, username')
+                   .ilike('username', `%${input}%`)
+                   .limit(5);
+                 setRecipientLoading(false);
+                 if (error || !data) {
+                   setUsernameSuggestions([]);
+                   setRecipientError('No user found');
+                 } else {
+                   setUsernameSuggestions(data);
+                   if (!data.some(u => u.username === input)) {
+                     setRecipientError('Please select a valid recipient username from the list.');
+                   } else {
+                     setRecipientError('');
+                   }
+                 }
+               }}
+               placeholder="Recipient Username"
+               disabled={actionLoading}
+               autoComplete="off"
+             />
+             {recipientLoading && <span className="text-sm text-gray-input ml-2">Searching...</span>}
+     
+             {/* Suggestions */}
+             {usernameSuggestions.length > 0 && (
+               <ul className="border border-gray-input-border rounded bg-white shadow mt-1 max-h-32 overflow-y-auto text-sm">
+                 {usernameSuggestions.map(user => (
+                   <li
+                     key={user.id}
+                     className="px-3 py-2 cursor-pointer hover:bg-green-light"
+                     onClick={() => {
+                       setRecipientUser(user);
+                       setSearchUsername(user.username);
+                       setUsernameSuggestions([]);
+                       setRecipientError("");
+                     }}
+                   >
+                     <a
+                       href={`/profile/${user.username}`}
+                       className="underline text-purple mr-2"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                     >
+                       {user.username}
+                     </a>
+                     <span className="text-gray-input">({user.id.slice(0, 6)}...)</span>
+                   </li>
+                 ))}
+               </ul>
+             )}
+     
+             {/* Selected Recipient */}
+             {recipientUser && (
+               <div className="text-sm mt-2 text-green-hover">
+                 Recipient:{" "}
+                 <a
+                   href={`/profile/${recipientUser.username}`}
+                   className="underline text-purple"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                 >
+                   {recipientUser.username}
+                 </a>
+               </div>
+             )}
+     
+             {/* Error */}
+             {recipientError && (
+               <div className="text-sm text-red mt-2">{recipientError}</div>
+             )}
+     
+             {/* Amount */}
+             <label className="block text-sm font-medium text-heading mt-4 mb-1">Amount</label>
+             <input
+               type="number"
+               min="1"
+               className="w-full border border-gray-input-border bg-gray-input text-heading px-3 py-2 rounded mb-3"
+               value={transferAmount}
+               onChange={e => setTransferAmount(e.target.value)}
+               placeholder="Enter amount"
+               disabled={actionLoading}
+             />
+     
+             {/* Password Section */}
+             {pendingAction === 'transfer' && (
+               <div className="mt-3 space-y-2">
+                 <label className="block text-sm font-medium text-heading">Wallet Password</label>
+                 <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                   <input
+                     type={showPassword ? "text" : "password"}
+                     className="border border-gray-input-border px-3 py-2 rounded w-full sm:w-auto"
+                     value={passwordInput}
+                     onChange={e => setPasswordInput(e.target.value)}
+                     placeholder="••••••••"
+                     autoFocus
+                   />
+                   <button
+                     className="bg-green-button text-white px-3 py-2 rounded hover:bg-green-hover"
+                     onClick={handlePasswordSubmit}
+                     disabled={actionLoading || !passwordInput}
+                   >
+                     Submit
+                   </button>
+                   <button
+                     type="button"
+                     className="text-xs text-gray-input underline"
+                     onClick={() => setShowPassword(!showPassword)}
+                   >
+                     {showPassword ? "Hide" : "Show"}
+                   </button>
+                 </div>
+                 {passwordError && (
+                   <span className="text-red text-xs">{passwordError}</span>
+                 )}
+               </div>
+             )}
+     
+             {/* Transfer Button */}
+             <button
+               className={`mt-5 w-full py-2 rounded font-semibold ${
+                 transferCooldown > 0
+                   ? 'bg-gray-400 cursor-not-allowed text-white'
+                   : 'bg-[#6c63ff] text-white hover:bg-purple'
+               }`}
+               onClick={handleTransfer}
+               disabled={actionLoading || !transferAmount || transferCooldown > 0}
+             >
+               {transferCooldown > 0 ? `Wait ${transferCooldown}s` : 'Transfer'}
+             </button>
+           </div>
+         </div>
+     
+         {/* Right Side: SVG Illustration */}
+         <div className="hidden md:flex items-center justify-center w-full md:max-w-sm">
+           <img
+             src="/auth_onboard_svg/transfer_illustration.svg"
+             alt="Transfer Illustration"
+             className="w-full h-auto object-contain"
+           />
+         </div>
+       </div>
+     </>
+     
       )}
       {successMessage && (
         <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-800 rounded">

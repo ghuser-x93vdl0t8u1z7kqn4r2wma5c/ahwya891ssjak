@@ -36,8 +36,12 @@ export default function SignIn() {
         });
         if (error) throw error;
       }
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError(String(error));
+      }
     } finally {
       setLoading(false);
     }
@@ -52,8 +56,12 @@ export default function SignIn() {
         },
       });
       if (error) throw error;
-    } catch (error: any) {
-      setError(error.message);
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError(String(error));
+      }
     }
   };
 
@@ -64,7 +72,7 @@ export default function SignIn() {
         <div className="max-w-md w-full">
           <h1 className="text-3xl font-bold mb-2">WELCOME BACK!</h1>
           <p className="text-gray-600 mb-8">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/signup" className="text-purple-attention hover:text-purple">
               Sign up
             </Link>

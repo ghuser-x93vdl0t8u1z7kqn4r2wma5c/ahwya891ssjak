@@ -4,7 +4,7 @@ import Navbar from './components/Navbar/Navbar';
 import HeroImage from './components/HeroImage/HeroImage';
 import Category from './components/Category/Category';
 import FindTalent from './components/FindTalent/FindTalent';
-import FindClient from './components/FindClient/FindClient';
+/* import FindClient from './components/FindClient/FindClient'; */
 import ListOfCategory from './components/ListOfCategory/ListOfCategory';
 import Footer from './components/Footer/Footer';
 import GetHired from './components/GetHired/GetHired';

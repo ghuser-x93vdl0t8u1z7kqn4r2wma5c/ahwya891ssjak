@@ -32,7 +32,7 @@ export default function GetHired() {
                 No stress.
               </h2>
               <p className="text-lg text-white">
-                Meet clients you're excited to work with and take your career or business to new heights.
+                Meet clients you&apos;re excited to work with and take your career or business to new heights.
               </p>
             </div>
 <div>

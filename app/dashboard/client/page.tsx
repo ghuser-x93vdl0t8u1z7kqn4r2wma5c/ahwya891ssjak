@@ -5,18 +5,18 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from '../components/Sidebar';
 import NotificationBell from '../components/NotificationBell';
-import ProfilePreview from '../components/ProfilePreview';
 import ChatPanel from '../components/ChatPanel';
-import JobCard from '../components/JobCard';
 import ApplicationCard from '../components/ApplicationCard';
-import Link from 'next/link';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 type Job = {
   job_id: string;
   title: string;
   budget: number;
+  pricing_type: string;
   estimated_time_range: string;
   created_at: string;
+  status?: 'open' | 'completed' | 'closed';
   applications: Array<{
     application_id: string;
     applicant_uid: string;
@@ -25,29 +25,41 @@ type Job = {
       profile_picture_url: string | null;
       main_skill: string | null;
       rating: number | null;
+      skills: string[];
     };
     cover_letter: string;
+    skills: string[];
     fees: number;
     status: 'pending' | 'interviewing' | 'hired' | 'rejected';
     time_range: string;
+    created_at: string;
   }>;
 };
 
 export default function ClientDashboard() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  // eslint-disable-next-line
   const [profile, setProfile] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const [userId, setUserId] = useState<string | null>(null);
   const [openChatWithUserId, setOpenChatWithUserId] = useState<string | null>(null);
 
+  // Accordion states
+  const [openJobId, setOpenJobId] = useState<string | null>(null);
+  // Track open applications per job as a map: jobId -> open application id or null
+  const [openApplications, setOpenApplications] = useState<Record<string, string | null>>({});
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (!user) return;
         setUserId(user.id);
+
         // Fetch profile
         const { data: profileData, error: profileError } = await supabase
           .from('users')
@@ -56,15 +68,27 @@ export default function ClientDashboard() {
           .single();
         if (profileError) throw profileError;
         setProfile(profileData);
-        // Fetch jobs created by the client
+
+        // Fetch jobs with applications
         const { data: jobsData, error: jobsError } = await supabase
           .from('jobs')
-          .select(`*, applications:applications (application_id, applicant_uid, cover_letter, fees, status, time_range, applicant:applicant_uid (display_name, profile_picture_url, main_skill, rating))`)
+          .select(
+            `*, 
+             applications:applications (
+               application_id, applicant_uid, cover_letter, fees, status, time_range, created_at,
+               applicant:applicant_uid (display_name, profile_picture_url, main_skill, rating, skills)
+             )`
+          )
           .eq('client_uid', user.id);
         if (jobsError) throw jobsError;
+
         setJobs(jobsData || []);
-      } catch (err: any) {
-        setError(err.message || 'Unknown error');
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message || 'Unknown error');
+        } else {
+          setError(String(err));
+        }
       } finally {
         setLoading(false);
       }
@@ -72,25 +96,38 @@ export default function ClientDashboard() {
     fetchData();
   }, []);
 
-  const updateApplicationStatus = async (applicationId: string, status: 'interviewing' | 'hired' | 'rejected') => {
+  const updateApplicationStatus = async (
+    applicationId: string,
+    status: 'interviewing' | 'hired' | 'rejected'
+  ) => {
     try {
-      const { error } = await supabase
-        .from('applications')
-        .update({ status })
-        .eq('application_id', applicationId);
+      const { error } = await supabase.from('applications').update({ status }).eq('application_id', applicationId);
       if (error) throw error;
-      // Update local state
-      setJobs(prevJobs =>
-        prevJobs.map(job => ({
+
+      setJobs((prevJobs) =>
+        prevJobs.map((job) => ({
           ...job,
-          applications: job.applications.map(app =>
+          applications: job.applications.map((app) =>
             app.application_id === applicationId ? { ...app, status } : app
-          )
+          ),
         }))
       );
-    } catch (err: any) {
-      setError(err.message || 'Error updating application status');
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message || 'Error updating application status');
+      } else {
+        setError(String(err));
+      }
     }
+  };
+
+  const formatDate = (isoString: string) => {
+    const date = new Date(isoString);
+    return date.toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
   };
 
   if (loading) {
@@ -107,13 +144,26 @@ export default function ClientDashboard() {
       </div>
     );
   }
+
+  // Toggle job accordion open/close
+  const toggleJobAccordion = (jobId: string) => {
+    setOpenJobId((prev) => (prev === jobId ? null : jobId));
+  };
+
+  // Toggle application accordion open/close for a job
+  const toggleApplicationAccordion = (jobId: string, appId: string) => {
+    setOpenApplications((prev) => ({
+      ...prev,
+      [jobId]: prev[jobId] === appId ? null : appId,
+    }));
+  };
+
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-green-light">
-      {/* Sidebar: collapsible on mobile */}
       <Sidebar />
-      <main className="flex-1 p-4 md:p-8">
+      <main className="flex-1 p-4 md:p-8 overflow-y-auto">
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
-          <h1 className="yatra-one-text text-2xl md:text-4xl text-heading font-bold">Client Dashboard</h1>
+          <h1 className="yatra-one-text text-2xl md:text-4xl text-purple font-bold">Business Dashboard</h1>
           <div className="flex items-center gap-3 flex-wrap">
             {userId && <NotificationBell userId={userId} />}
             <button
@@ -124,79 +174,172 @@ export default function ClientDashboard() {
             </button>
           </div>
         </div>
-        <div className="space-y-8">
-          {jobs.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-xl shadow border border-purple-attention">
-              <h2 className="text-xl font-semibold text-purple-attention">No jobs posted yet</h2>
-              <p className="mt-2 text-heading">Get started by posting your first job!</p>
-            </div>
-          ) : (
-            jobs.map((job) => (
-              <JobCard key={job.job_id} job={job}>
-                <span className="text-sm font-medium text-purple-attention">
-                  {job.applications.length} {job.applications.length === 1 ? 'Application' : 'Applications'}
-                </span>
-              </JobCard>
-            ))
-          )}
-          {/* Applications section for each job */}
-          {jobs.map((job) => (
-            job.applications.length > 0 && (
-              <div key={job.job_id + '-applications'} className="bg-white rounded-xl shadow p-6 border border-purple-attention">
-                <h3 className="text-lg font-semibold mb-4 text-purple-attention">Applications for {job.title}</h3>
-                <div className="space-y-4">
-                  {job.applications.map((application) => (
-                    <ApplicationCard key={application.application_id} application={application}>
-                      <div className="flex flex-wrap gap-2 items-center">
-                        <button
-                          className="px-3 py-1 text-xs rounded bg-purple text-white hover:bg-purple-attention border-2 border-purple-attention transition"
-                          onClick={() => {
-                            if (application.applicant_uid) setOpenChatWithUserId(application.applicant_uid);
-                          }}
-                        >
-                          Message Freelancer
-                        </button>
-                        {application.status === 'pending' && (
-                          <>
-                            <button
-                              className="px-3 py-1 text-xs rounded bg-yellow bg-opacity-70 text-heading hover:bg-yellow border-2 border-yellow-300 transition"
-                              onClick={() => updateApplicationStatus(application.application_id, 'interviewing')}
-                            >
-                              Interview
-                            </button>
-                            <button
-                              className="px-3 py-1 text-xs rounded bg-red bg-opacity-30 text-red hover:bg-red border-2 border-red-400 transition"
-                              onClick={() => updateApplicationStatus(application.application_id, 'rejected')}
-                            >
-                              Reject
-                            </button>
-                          </>
-                        )}
-                        {application.status === 'interviewing' && (
-                          <button
-                            className="px-3 py-1 text-xs rounded bg-green-light text-heading hover:bg-green-hover border-2 border-green-dark transition"
-                            onClick={() => updateApplicationStatus(application.application_id, 'hired')}
-                          >
-                            Hire
-                          </button>
-                        )}
-                        <span className={`px-3 py-1 text-xs rounded-full border font-semibold ${
-                          application.status === 'hired' ? 'bg-green-light text-green-dark border-green-dark' :
-                          application.status === 'rejected' ? 'bg-red bg-opacity-20 text-red border-red-400' :
-                          'bg-yellow bg-opacity-60 text-heading border-yellow-300'
-                        }`}>
-                          {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
-                        </span>
+
+        {jobs.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-xl shadow border border-purple-attention">
+            <h2 className="text-xl font-semibold text-purple-attention">No jobs posted yet</h2>
+            <p className="mt-2 text-heading">Get started by posting your first job!</p>
+          </div>
+        ) : (
+          jobs.map((job) => {
+            const completed = job.status === 'completed';
+            const isJobOpen = openJobId === job.job_id;
+
+            return (
+              <section
+                key={job.job_id}
+                className={`mb-6 bg-white rounded-xl shadow border ${
+                  completed ? 'border-green-dark bg-green-light/40' : 'border-purple-attention'
+                }`}
+              >
+                <button
+                  className="w-full flex justify-between items-center p-6 cursor-pointer focus:outline-none"
+                  onClick={() => toggleJobAccordion(job.job_id)}
+                  aria-expanded={isJobOpen}
+                >
+                  <div className="flex flex-col justify-items-start">
+                    <h2 className="self-start text-xl font-bold text-purple-attention">{job.title}</h2>
+                    <p className="text-sm text-gray-600">
+                      Posted on:{' '}
+                      <span className="font-semibold">{formatDate(job.created_at)}</span> | Budget:{' '}
+                      <span className="font-semibold">
+                        NPR: {job.budget}{job.pricing_type === 'hourly' ? '/hr' : '/project'}
+                      </span>{' '}
+                      | Estimated time: {job.estimated_time_range}
+                    </p>
+                    {completed && (
+                      <span className="inline-block mt-1 px-3 py-1 text-xs font-semibold rounded-full bg-green-dark text-white">
+                        Completed
+                      </span>
+                    )}
+                  </div>
+                  <div className="ml-4">
+                    {isJobOpen ? (
+                      <ChevronUp className="text-purple-attention" />
+                    ) : (
+                      <ChevronDown className="text-purple-attention" />
+                    )}
+                  </div>
+                </button>
+
+                {isJobOpen && (
+                  <div className="px-6 pb-6">
+                    {job.applications.length === 0 ? (
+                      <p className="text-center text-gray-500 italic">No applications yet.</p>
+                    ) : (
+                      <div className="space-y-4">
+                        {job.applications.map((application) => {
+                          const isAppOpen = openApplications[job.job_id] === application.application_id;
+
+                          return (
+                            <div key={application.application_id} className="border border-gray-200 rounded-lg">
+                              <button
+                                className="w-full flex justify-between items-center p-4 cursor-pointer bg-gray-50 hover:bg-gray-100 focus:outline-none"
+                                onClick={() =>
+                                  toggleApplicationAccordion(job.job_id, application.application_id)
+                                }
+                                aria-expanded={isAppOpen}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="font-semibold text-purple-attention">
+                                    {application.applicant.display_name}
+                                  </div>
+                                  <div className="text-xs px-2 py-1 bg-purple-attention text-white rounded-full border border-purple-attention font-medium">
+                                    {application.applicant.main_skill || 'No main skill'}
+                                  </div>
+                                  <span className="text-xs text-gray-600 capitalize">{application.status}</span>
+
+                                  <div className="text-xs font-semibold text-purple-attention">
+                                    Bid: NPR {application.fees}{job.pricing_type === 'hourly' ? '/hr' : '/project'}
+                                  </div>
+                                </div>
+                                <div>
+                                  {isAppOpen ? (
+                                    <ChevronUp className="text-purple-attention" />
+                                  ) : (
+                                    <ChevronDown className="text-purple-attention" />
+                                  )}
+                                </div>
+                              </button>
+
+                              {isAppOpen && (
+                                <div className="p-4 bg-white">
+                                  <ApplicationCard application={application} pricing_type={job.pricing_type}>
+                                    <div className="flex flex-wrap gap-2 items-center mt-2">
+                                      <button
+                                        className="px-3 py-1 text-xs rounded bg-purple text-white hover:bg-purple-attention border-2 border-purple-attention transition"
+                                        onClick={() => {
+                                          if (application.applicant_uid)
+                                            setOpenChatWithUserId(application.applicant_uid);
+                                        }}
+                                      >
+                                        Message Freelancer
+                                      </button>
+
+                                      {application.status === 'pending' && (
+                                        <>
+                                          <button
+                                            className="px-3 py-1 text-xs rounded bg-yellow bg-opacity-70 text-heading hover:bg-yellow border-2 border-yellow-300 transition"
+                                            onClick={() =>
+                                              updateApplicationStatus(application.application_id, 'interviewing')
+                                            }
+                                          >
+                                            Interview
+                                          </button>
+                                          <button
+                                            className="px-3 py-1 text-xs rounded bg-red bg-opacity-30 text-white hover:bg-red border-2 border-red-400 transition"
+                                            onClick={() =>
+                                              updateApplicationStatus(application.application_id, 'rejected')
+                                            }
+                                          >
+                                            Reject
+                                          </button>
+                                        </>
+                                      )}
+
+                                      {application.status === 'interviewing' && (
+                                        <button
+                                          className="px-3 py-1 text-xs rounded bg-green-light text-heading hover:bg-green-hover border-2 border-green-dark transition"
+                                          onClick={() =>
+                                            updateApplicationStatus(application.application_id, 'hired')
+                                          }
+                                        >
+                                          Hire
+                                        </button>
+                                      )}
+
+                                      <span
+                                        className={`px-3 py-1 text-xs rounded-full border font-semibold ${
+                                          application.status === 'hired'
+                                            ? 'bg-green-light text-green-dark border-green-dark'
+                                            : application.status === 'rejected'
+                                            ? 'bg-red bg-opacity-20 text-white border-red-400'
+                                            : 'bg-yellow bg-opacity-60 text-heading border-yellow-300'
+                                        }`}
+                                      >
+                                        {application.status.charAt(0).toUpperCase() + application.status.slice(1)}
+                                      </span>
+
+                                      <span className="ml-auto text-xs text-gray-500">
+                                        Applied: {formatDate(application.created_at)}
+                                      </span>
+                                    </div>
+                                  </ApplicationCard>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
-                    </ApplicationCard>
-                  ))}
-                </div>
-              </div>
-            )
-          ))}
-        </div>
+                    )}
+                  </div>
+                )}
+              </section>
+            );
+          })
+        )}
       </main>
-      {/* Mini Chat Panel */}
+
       {userId && (
         <ChatPanel
           userId={userId}

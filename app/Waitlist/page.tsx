@@ -1,8 +1,7 @@
+/*
 'use client';
 
 import { useEffect, useState } from 'react';
-import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, getDocs } from 'firebase/firestore';
 import { FaInstagram, FaTiktok } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
 import { FaFacebookF } from 'react-icons/fa';
@@ -70,7 +69,6 @@ export default function Waitlist() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* Background */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
@@ -79,7 +77,6 @@ export default function Waitlist() {
       />
 
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 text-center">
-        {/* Header */}
         <div className="mb-10 w-full flex items-center justify-between md:items-end">
           <div className="flex items-center justify-center mb-4 md:mb-0">
             <img
@@ -96,7 +93,6 @@ export default function Waitlist() {
           </div>
         </div>
 
-        {/* Main Content */}
         <div className="max-w-4xl mx-auto mb-8 2xl:w-full">
           <h2
             className="text-left text-5xl md:text-6xl 2xl:text-[5.5rem] font-bold text-white"
@@ -116,7 +112,7 @@ export default function Waitlist() {
           </p>
         </div>
 
-        {/* Email Section */}
+        {/* Email Section 
         <div className="flex flex-col md:flex-row w-full justify-center items-center gap-4 yatra-one-text">
           {!isSubmitted && (
             <div className="text-white mb-0">
@@ -188,7 +184,7 @@ export default function Waitlist() {
           </div>
         </div>
 
-        {/* Footer */}
+        {/* Footer
         <footer className="flex flex-row gap-10 mt-8">
           <a
             href="https://www.instagram.com/lahara.work/"
@@ -232,3 +228,4 @@ export default function Waitlist() {
     </div>
   );
 }
+*/

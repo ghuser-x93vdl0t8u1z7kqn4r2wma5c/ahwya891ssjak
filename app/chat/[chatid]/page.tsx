@@ -1,18 +1,39 @@
-
 'use client';
+
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { supabase } from '@/app/lib/supabase';
 import Link from 'next/link';
 import CryptoJS from 'crypto-js';
 
+interface Message {
+  message_id?: string;
+  sender_uid: string;
+  message: string;
+  image_url: string | null;
+  created_at: string;
+}
+
+interface Chat {
+  chat_id: string;
+  user_1_uid: string;
+  user_2_uid: string;
+}
+
+interface User {
+  id: string;
+  username: string;
+  profile_picture_url?: string;
+}
+
 const ChatPage = () => {
-  const { chatid } = useParams();
-  const [chat, setChat] = useState<any>(null);
-  const [partners, setPartners] = useState<any>(null);
-  const [messages, setMessages] = useState<any[]>([]);
-  const [usernamesByUid, setUsernamesByUid] = useState<{ [uid: string]: string }>({});
-  const [profilePicsByUid, setProfilePicsByUid] = useState<{ [uid: string]: string }>({});
+  const { chatid } = useParams<{ chatid: string }>();
+  const [chat, setChat] = useState<Chat | null>(null);
+  const [partners, setPartners] = useState<Record<string, User>>({});
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [usernamesByUid, setUsernamesByUid] = useState<Record<string, string>>({});
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [profilePicsByUid, setProfilePicsByUid] = useState<Record<string, string>>({});
   const [newMessage, setNewMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -20,32 +41,35 @@ const ChatPage = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const userId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
 
-  // Fetch chat and messages
   useEffect(() => {
     const fetchChat = async () => {
       setLoading(true);
       try {
+        // eslint-disable-next-line prefer-const
         let { data: chatData, error: chatError } = await supabase
           .from('chats')
           .select('*')
           .eq('chat_id', chatid)
           .maybeSingle();
+
         if (chatError) throw chatError;
+
         if (!chatData) {
-          // Try to create the chat if partner_uid is provided
           const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-          const partner_uid = urlParams ? urlParams.get('partner_uid') : null;
+          const partner_uid = urlParams?.get('partner_uid');
+
           if (!userId || !partner_uid) {
             setError('Chat not found and cannot create chat (missing participants).');
             setLoading(false);
             return;
           }
-          // Create the chat
+
           const { data: newChat, error: createError } = await supabase
             .from('chats')
             .insert({ user_1_uid: userId, user_2_uid: partner_uid, chat_id: chatid })
             .select()
             .single();
+
           if (createError) {
             setError('Could not create chat: ' + createError.message);
             setLoading(false);
@@ -53,53 +77,66 @@ const ChatPage = () => {
           }
           chatData = newChat;
         }
+
         setChat(chatData);
-        // Fetch partner info
+
         const partnerIds = [chatData.user_1_uid, chatData.user_2_uid];
         const { data: users, error: usersError } = await supabase
           .from('users')
           .select('id, username, profile_picture_url')
           .in('id', partnerIds);
+
         if (usersError) throw usersError;
-        const partnersObj: any = {};
-        const usernamesObj: any = {};
-        const profilePicsObj: any = {};
-        users.forEach((u: any) => {
+
+        const partnersObj: Record<string, User> = {};
+        const usernamesObj: Record<string, string> = {};
+        const profilePicsObj: Record<string, string> = {};
+
+        users?.forEach((u) => {
           partnersObj[u.id] = u;
           usernamesObj[u.id] = u.username;
-          profilePicsObj[u.id] = u.profile_picture_url;
+          profilePicsObj[u.id] = u.profile_picture_url || '';
         });
+
         setPartners(partnersObj);
         setUsernamesByUid(usernamesObj);
         setProfilePicsByUid(profilePicsObj);
-        // Fetch messages
+
         const { data: msgs, error: msgError } = await supabase
           .from('messages')
           .select('*')
           .eq('chat_id', chatid)
           .order('created_at', { ascending: true });
+
         if (msgError) throw msgError;
+
         setMessages(msgs || []);
+
         setTimeout(() => {
           messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         }, 100);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err) {
+        if (err instanceof Error) {
+          setError(err.message);
+        } else {
+          setError(String(err));
+        }
       } finally {
         setLoading(false);
       }
     };
-    if (chatid) fetchChat();
-  }, [chatid]);
 
-  // Send message
+    if (chatid) fetchChat();
+  }, [chatid, userId]);
+
   const handleSend = async () => {
-    if (!newMessage.trim() || !chat) return;
+    if (!newMessage.trim() || !chat || !userId) return;
     setSending(true);
     try {
       const partnerId = chat.user_1_uid === userId ? chat.user_2_uid : chat.user_1_uid;
       const key = CryptoJS.SHA256(userId + partnerId).toString();
       const encrypted = CryptoJS.AES.encrypt(newMessage, key).toString();
+
       const { error: sendError } = await supabase
         .from('messages')
         .insert({
@@ -109,20 +146,27 @@ const ChatPage = () => {
           image_url: null,
           created_at: new Date().toISOString(),
         });
+
       if (sendError) throw sendError;
+
       setNewMessage('');
-      // Refresh messages
+
       const { data: msgs } = await supabase
         .from('messages')
         .select('*')
         .eq('chat_id', chatid)
         .order('created_at', { ascending: true });
+
       setMessages(msgs || []);
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(String(err));
+      }
     } finally {
       setSending(false);
     }
@@ -135,7 +179,7 @@ const ChatPage = () => {
   return (
     <div className="max-w-lg mx-auto my-8 bg-white border rounded-lg shadow-lg p-4 flex flex-col min-h-[70vh]">
       <div className="font-bold mb-2 flex items-center gap-2">
-        {Object.values(partners || {}).map((partner: any) => (
+        {Object.values(partners).map((partner) => (
           <Link key={partner.id} href={`/profile/${partner.username}`} className="flex items-center gap-2 hover:underline">
             {partner.profile_picture_url ? (
               <img src={partner.profile_picture_url} alt={partner.username} className="w-7 h-7 rounded-full object-cover border" />
@@ -160,21 +204,15 @@ const ChatPage = () => {
                 {msg.sender_uid === userId ? 'You' : usernamesByUid[msg.sender_uid] || ''}
               </div>
               {msg.image_url ? (
-                <img
-                  src={msg.image_url}
-                  alt="Sent attachment"
-                  className="max-w-[120px] max-h-[120px] rounded mb-1 inline-block"
-                />
+                <img src={msg.image_url} alt="Sent attachment" className="max-w-[120px] max-h-[120px] rounded mb-1 inline-block" />
               ) : (
                 <div>{(() => {
                   try {
-                    // Try both directions for key: sender+recipient and recipient+sender
                     const partnerId = chat.user_1_uid === userId ? chat.user_2_uid : chat.user_1_uid;
                     let key = CryptoJS.SHA256(userId + partnerId).toString();
                     let bytes = CryptoJS.AES.decrypt(msg.message, key);
                     let decrypted = bytes.toString(CryptoJS.enc.Utf8);
                     if (!decrypted) {
-                      // Try reverse order
                       key = CryptoJS.SHA256(partnerId + userId).toString();
                       bytes = CryptoJS.AES.decrypt(msg.message, key);
                       decrypted = bytes.toString(CryptoJS.enc.Utf8);
