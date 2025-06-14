@@ -23,6 +23,9 @@ const yatraOne = Yatra_One({
 export const metadata: Metadata = {
   title: "Lahara",
   description: "Nepal's First Freelancing & Influencer Marketplace.",
+  icons: {
+    icon: '/favicon1.ico', // path to your favicon
+  },
 };
 
 export default function RootLayout({

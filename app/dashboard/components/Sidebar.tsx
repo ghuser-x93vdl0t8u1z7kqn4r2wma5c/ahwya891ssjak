@@ -76,7 +76,9 @@ export default function Sidebar() {
       
       {/* Hamburger for small screens */}
       <button
-        className="md:hidden z-50 absolute top-4 left-4 w-12 h-12 mr-10"
+        className={`md:hidden z-50 absolute top-4 left-4  rounded transition-colors ${
+          open ? 'bg-white p-2' : ''
+        }`}
         onClick={() => setOpen(!open)}
         aria-label="Open sidebar"
       >
@@ -130,7 +132,7 @@ export default function Sidebar() {
       {/* Overlay for mobile when sidebar is open */}
       {open && (
         <div
-          className="fixed inset-0 bg-green-dark z-40 p-4 flex flex-col"
+          className="fixed inset-0 bg-green-dark z-40 p-4 py-20 flex flex-col"
           onClick={() => setOpen(false)}
         >
           {/* Prevent closing when clicking inside nav */}
