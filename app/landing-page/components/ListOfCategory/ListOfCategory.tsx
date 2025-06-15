@@ -110,7 +110,7 @@ export default function ListOfCategory() {
                 {firstColumnSkills.map((skill) => (
                   <a 
                     key={skill.skill}
-                    href={`/category/${skill.skill.toLowerCase().replace(/\s+/g, '-')}`}
+                    href={`/category/${skill.skill.toLowerCase().replace(/\s+/g, '-').replace(/\//g, '-')}`}
                     className="block text-body hover:text-green-hover transition-colors"
                   >
                     {skill.skill}
@@ -121,7 +121,7 @@ export default function ListOfCategory() {
                 {secondColumnSkills.map((skill) => (
                   <a 
                     key={skill.skill}
-                    href={`/category/${skill.skill.toLowerCase().replace(/\s+/g, '-')}`}
+                    href={`/category/${skill.skill.toLowerCase().replace(/\s+/g, '-').replace(/\//g, '-')}`}
                     className="block text-body hover:text-green-hover transition-colors"
                   >
                     {skill.skill}

@@ -782,7 +782,19 @@ export default function ProfilePage() {
             <div className="flex flex-col items-center gap-2">
 
 <div className="flex flex-row items-center gap-2">
-  <span className="text-md text-color ">{profile.portfolio || 'No Portfolio Links'}</span>
+<a
+  href={
+    profile.portfolio?.startsWith('http://') || profile.portfolio?.startsWith('https://')
+      ? profile.portfolio
+      : `https://${profile.portfolio}`
+  }
+  target="_blank"
+  rel="noopener noreferrer"
+  className="text-purple hover:text-purple-attention"
+>
+  {profile.portfolio || 'No Portfolio Links'}
+</a>
+
   {editingPortfolio ? (
     <>
       <input

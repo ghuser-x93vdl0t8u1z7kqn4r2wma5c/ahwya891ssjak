@@ -70,7 +70,7 @@ export default function Category() {
             title,
             rating: info.ratingCount > 0 ? info.totalRating / info.ratingCount : 0,
             skillCount: info.count,
-            slug: title.toLowerCase().replace(/\s+/g, '-')
+            slug: title.toLowerCase().replace(/\s+/g, '-').replace(/\//g, '-') 
           }))
           // Sort by number of people and take top 10
           .sort((a, b) => b.skillCount - a.skillCount)

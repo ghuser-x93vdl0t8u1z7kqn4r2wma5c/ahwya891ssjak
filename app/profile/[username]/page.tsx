@@ -46,7 +46,7 @@ export default function ProfilePage() {
     if (loading) {
       const timeout = setTimeout(() => {
         if (loading) window.location.reload();
-      }, 5000);
+      }, 60000);
       return () => clearTimeout(timeout);
     }
   }, [loading]);

@@ -169,6 +169,8 @@ export default function OnboardingPage() {
                     name="username"
                     value={formData.username}
                     onChange={handleInputChange}
+                    pattern="^[A-Za-z0-9]+$"
+                    title="Username can only contain letters (A-Z, a-z) and numbers (0-9)"
                     required
                     className={`block w-full rounded-full px-4 py-2 border ${usernameError ? 'border-red' : 'border-gray-200'} focus:outline-none focus:ring-2 focus:ring-purple bg-gray-input text-gray-input`}
                     placeholder="Enter your username"
