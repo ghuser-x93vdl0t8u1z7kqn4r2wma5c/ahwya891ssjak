@@ -260,7 +260,7 @@ const [deleting, setDeleting] = useState(false);
                </div>
 
                {jobToDelete && (
-  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm">
     <div className="bg-white border border-purple-attention shadow-2xl rounded-2xl p-6 w-full max-w-xl animate-fade-in relative">
       
       {/* Close Button */}
