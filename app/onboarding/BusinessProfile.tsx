@@ -192,7 +192,7 @@ export default function BusinessProfile({ onNext, onBack }: BusinessProfileProps
         </div>
       </div>
       
-      <div className="flex-1 bg-white">
+      <div className="hidden md:flex flex-1 bg-white">
         <div className="h-full w-full flex items-center justify-center">
           <Image
             src="/auth_onboard_svg/business.svg"

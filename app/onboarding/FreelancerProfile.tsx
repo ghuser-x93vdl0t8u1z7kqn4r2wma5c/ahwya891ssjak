@@ -295,7 +295,7 @@ export default function FreelancerProfile({ onNext, onBack }: FreelancerProfileP
         </div>
       </div>
       
-      <div className="flex-1 bg-white">
+      <div className="hidden md:flex flex-1 bg-white">
         <div className="h-full w-full flex items-center justify-center">
           <Image
             src="/auth_onboard_svg/freelancer.svg"
