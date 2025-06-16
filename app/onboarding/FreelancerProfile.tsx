@@ -105,7 +105,7 @@ export default function FreelancerProfile({ onNext, onBack }: FreelancerProfileP
   };
 
   return (
-    <div className="flex min-w-[80vh] w-[120vh] max-h-[100vh] bg-white rounded-lg m-5">
+    <div className="flex min-w-[80vh] md:w-[100vh] max-h-[100vh] bg-white rounded-lg m-5">
       <div className="flex-1 px-12 py-8 flex justify-center">
         <div className="max-w-2xl w-full space-y-6">
           <div className="space-y-1.5">
