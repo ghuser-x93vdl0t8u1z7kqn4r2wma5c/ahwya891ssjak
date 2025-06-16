@@ -139,12 +139,6 @@ export default function SignIn() {
                   Magic Link
                 </label>
               </div>
-
-              {!isMagicLink && (
-                <Link href="/forgot-password" className="text-sm text-purple-attention hover:text-purple">
-                  Forgot password?
-                </Link>
-              )}
             </div>
 
             <button

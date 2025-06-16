@@ -7,7 +7,7 @@ import Sidebar from '../components/Sidebar';
 import NotificationBell from '../components/NotificationBell';
 import ChatPanel from '../components/ChatPanel';
 import ApplicationCard from '../components/ApplicationCard';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp,Trash2 } from 'lucide-react';
 
 type Job = {
   job_id: string;
@@ -39,6 +39,10 @@ type Job = {
 export default function ClientDashboard() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
+  const [jobToDelete, setJobToDelete] = useState<Job | null>(null);
+const [confirmInput, setConfirmInput] = useState('');
+const [deleting, setDeleting] = useState(false);
+
   // eslint-disable-next-line
   const [profile, setProfile] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -121,6 +125,26 @@ export default function ClientDashboard() {
     }
   };
 
+  const handleDeleteConfirm = async () => {
+    if (!jobToDelete || confirmInput !== jobToDelete.title) return;
+    setDeleting(true);
+  
+    try {
+      const { error } = await supabase.from('jobs').delete().eq('job_id', jobToDelete.job_id);
+      if (error) throw error;
+  
+      setJobs((prev) => prev.filter((job) => job.job_id !== jobToDelete.job_id));
+      setJobToDelete(null);
+      setConfirmInput('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setDeleting(false);
+    }
+  };
+  
+  
+
   const formatDate = (isoString: string) => {
     const date = new Date(isoString);
     return date.toLocaleDateString(undefined, {
@@ -197,8 +221,9 @@ export default function ClientDashboard() {
                   completed ? 'border-green-dark bg-green-light/40' : 'border-purple-attention'
                 }`}
               >
+                <div className='flex flex-row justify-between items-center p-6 gap-2'>
                 <button
-                  className="w-full flex justify-between items-center p-6 cursor-pointer focus:outline-none"
+                  className="w-full flex justify-between items-center cursor-pointer focus:outline-none"
                   onClick={() => toggleJobAccordion(job.job_id)}
                   aria-expanded={isJobOpen}
                 >
@@ -218,7 +243,7 @@ export default function ClientDashboard() {
                       </span>
                     )}
                   </div>
-                  <div className="ml-4">
+                  <div className="">
                     {isJobOpen ? (
                       <ChevronUp className="text-purple-attention" />
                     ) : (
@@ -226,6 +251,58 @@ export default function ClientDashboard() {
                     )}
                   </div>
                 </button>
+                <button
+                      onClick={() => setJobToDelete(job)}
+                      className="text-red hover:underline text-sm"
+                    >
+                      <Trash2 className='w-4 h-4' />
+                    </button>
+               </div>
+
+                {jobToDelete && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
+      <h2 className="text-lg font-bold text-red-600 mb-2">Delete Job</h2>
+      <p className="text-sm text-gray-700 mb-4">
+        This action is permanent. To confirm deletion of{' '}
+        <span className="font-semibold">{jobToDelete.title}</span>, type the job title below:
+      </p>
+
+      <input
+        type="text"
+        className="w-full border px-3 py-2 rounded mb-4"
+        placeholder="Type job title to confirm"
+        value={confirmInput}
+        onChange={(e) => setConfirmInput(e.target.value)}
+      />
+
+      <div className="flex justify-between">
+        <button
+          onClick={() => {
+            setJobToDelete(null);
+            setConfirmInput('');
+          }}
+          className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 text-sm"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={handleDeleteConfirm}
+          disabled={confirmInput !== jobToDelete.title || deleting}
+          className={`px-4 py-2 rounded text-white text-sm ${
+            confirmInput === jobToDelete.title
+              ? 'bg-red-600 hover:bg-red-700'
+              : 'bg-red-300 cursor-not-allowed'
+          }`}
+        >
+          {deleting ? 'Deleting...' : 'Confirm Delete'}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 
                 {isJobOpen && (
                   <div className="px-6 pb-6">
