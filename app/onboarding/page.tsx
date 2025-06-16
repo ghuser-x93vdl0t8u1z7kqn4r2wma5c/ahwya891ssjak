@@ -86,13 +86,18 @@ export default function OnboardingPage() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    const finalValue = name === 'username' ? value.toLowerCase() : value;
-    setFormData(prev => ({ ...prev, [name]: finalValue }));
 
     if (name === 'username') {
-      checkUsername(finalValue);
+      // Allow only a-z and 0-9 — remove spaces and special chars immediately
+      const filteredValue = value.toLowerCase().replace(/[^a-z0-9]/g, '');
+      // eslint-disable-next-line
+      setFormData(prev => ({ ...prev, [name]: filteredValue }));
+      checkUsername(filteredValue);
+    } else {
+      // eslint-disable-next-line
+      setFormData(prev => ({ ...prev, [name]: value }));
     }
-  };
+};
 
   const handleNext = (data?: any) => {
     if (data) setProfileData(data);
