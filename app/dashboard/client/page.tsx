@@ -279,13 +279,13 @@ const [deleting, setDeleting] = useState(false);
 
       <p className="text-gray-700 text-sm mb-4">
         This action is <span className="text-red-600 font-semibold">permanent</span>. To confirm deletion of{' '}
-        <span className="font-medium text-gray-800">{jobToDelete.title}</span>, type the job title below:
+        <span className="font-medium text-gray-800">{jobToDelete.title}</span>, type <span className="font-medium text-purple-attention">&apos;Confirm&apos;</span> below:
       </p>
 
       <input
         type="text"
         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-attention mb-4"
-        placeholder="Type job title to confirm"
+        placeholder="Type 'Confirm' to confirm"
         value={confirmInput}
         onChange={(e) => setConfirmInput(e.target.value)}
       />
@@ -303,9 +303,9 @@ const [deleting, setDeleting] = useState(false);
 
         <button
           onClick={handleDeleteConfirm}
-          disabled={confirmInput !== jobToDelete.title || deleting}
+          disabled={confirmInput !== "Confirm" || deleting}
           className={`px-4 py-2 text-sm font-medium rounded-lg text-white transition ${
-            confirmInput === jobToDelete.title && !deleting
+            confirmInput === "Confirm" && !deleting
               ? 'bg-purple-attention hover:bg-purple'
               : 'bg-purple-200 cursor-not-allowed'
           }`}
