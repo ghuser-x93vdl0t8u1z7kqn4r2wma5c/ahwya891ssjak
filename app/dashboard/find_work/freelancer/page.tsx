@@ -293,8 +293,8 @@ export default function FindWorkFreelancer() {
           ) : (
             filteredJobs.map((job) => (
               <JobCard key={job.job_id} job={job}>
-                <div className="flex justify-between items-center w-full">
-                  <span className="text-sm font-semibold text-gray-700">{formatBudget(job)}</span>
+                <div className="flex justify-end gap-4 items-center w-full">
+                  <span className="text-purple-attention font-semibold text-sm">{formatBudget(job)}</span>
                   <button
                     className="px-4 py-1.5 text-xs rounded-lg bg-purple-attention text-white font-semibold shadow-sm hover:bg-purple transition disabled:opacity-60"
                     onClick={() => openApplyModal(job)}
