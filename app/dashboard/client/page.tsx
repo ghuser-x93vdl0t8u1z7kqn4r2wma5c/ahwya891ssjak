@@ -126,7 +126,7 @@ const [deleting, setDeleting] = useState(false);
   };
 
   const handleDeleteConfirm = async () => {
-    if (!jobToDelete || confirmInput !== jobToDelete.title) return;
+    if (!jobToDelete || confirmInput !== "Confirm") return;
     setDeleting(true);
   
     try {
