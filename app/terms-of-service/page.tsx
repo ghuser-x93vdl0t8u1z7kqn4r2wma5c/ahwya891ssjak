@@ -5,7 +5,7 @@ import Footer from "@/app/landing-page/components/Footer/Footer";
 
 export default function TermsOfService() {
   return (
-    <>
+    <div className="pb-4 px-4">
       <Navbar />
 
       <main className="min-h-screen bg-green-light py-12 px-6 max-w-4xl mx-auto font-sans">
@@ -152,7 +152,7 @@ export default function TermsOfService() {
               support@lahara.work
             </a>{" "}
             or visit our{" "}
-            <a href="/contact" className="underline hover:text-purple">
+            <a href="/contact-us" className="underline hover:text-purple">
               Contact Page
             </a>
             .
@@ -161,6 +161,6 @@ export default function TermsOfService() {
       </main>
 
       <Footer />
-    </>
+    </div>
   );
 }

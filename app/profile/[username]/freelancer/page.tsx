@@ -490,6 +490,7 @@ export default function ProfilePage() {
         value={newBio}
         onChange={e => setNewBio(e.target.value)}
         disabled={savingBio}
+        rows={5}
         style={{ minWidth: 160 }} 
       />
       <button
@@ -782,18 +783,23 @@ export default function ProfilePage() {
             <div className="flex flex-col items-center gap-2">
 
 <div className="flex flex-row items-center gap-2">
-<a
-  href={
-    profile.portfolio?.startsWith('http://') || profile.portfolio?.startsWith('https://')
-      ? profile.portfolio
-      : `https://${profile.portfolio}`
-  }
-  target="_blank"
-  rel="noopener noreferrer"
-  className="text-purple hover:text-purple-attention"
->
-  {profile.portfolio || 'No Portfolio Links'}
-</a>
+{profile.portfolio ? (
+  <a
+    href={
+      profile.portfolio.startsWith('http://') || profile.portfolio.startsWith('https://')
+        ? profile.portfolio
+        : `https://${profile.portfolio}`
+    }
+    target="_blank"
+    rel="noopener noreferrer"
+    className="text-purple hover:text-purple-attention"
+  >
+    {profile.portfolio}
+  </a>
+) : (
+  <span className="text-gray-500">No Portfolio Links</span>
+)}
+
 
   {editingPortfolio ? (
     <>

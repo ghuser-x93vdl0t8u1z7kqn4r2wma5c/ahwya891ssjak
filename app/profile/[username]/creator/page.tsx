@@ -508,7 +508,7 @@ export default function ProfilePage() {
                   value={newBio}
                   onChange={e => setNewBio(e.target.value)}
                   disabled={savingBio}
-                  rows={3}
+                  rows={5}
                 />
                 <button
                   onClick={async () => {

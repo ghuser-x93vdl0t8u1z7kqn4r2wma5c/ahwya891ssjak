@@ -18,6 +18,16 @@ export default function WalletPage() {
   const [showPasswordPrompt, setShowPasswordPrompt] = useState(true);
   const [showPasswordPromptDecider, setShowPasswordPromptDecider] = useState(true);
 
+  // Security question/answer for wallet password reset
+  const [securityQuestion, setSecurityQuestion] = useState("");
+  const [securityAnswer, setSecurityAnswer] = useState("");
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotAnswerInput, setForgotAnswerInput] = useState("");
+  const [forgotAnswerCorrect, setForgotAnswerCorrect] = useState(false);
+  const [forgotPwError, setForgotPwError] = useState("");
+  const [newPasswordInput, setNewPasswordInput] = useState("");
+  const [newPasswordError, setNewPasswordError] = useState("");
+
 
   // On mount, check for wallet unlock session in localStorage (session-based, 15 min)
   useEffect(() => {
@@ -155,19 +165,25 @@ export default function WalletPage() {
       setPasswordError("Password must be at least 8 characters and include a number and a letter.");
       return;
     }
+    if (!securityQuestion.trim() || !securityAnswer.trim()) {
+      setPasswordError("Please enter a security question and answer.");
+      return;
+    }
     setActionLoading(true);
     try {
       // Set wallet password (hash)
       const hashed = await hashWalletPassword(passwordInput);
       const { error: pwError } = await supabase
         .from("wallets")
-        .update({ password: hashed })
+        .update({ password: hashed, question: securityQuestion.trim(), answer: securityAnswer.trim() })
         .eq("user_id", userId);
       if (pwError) throw pwError;
       setShowSetPassword(false);
       setShowPasswordPrompt(true);
       setPasswordInput("");
-      setWallet((w: any) => ({ ...w, password: hashed }));
+      setSecurityQuestion("");
+      setSecurityAnswer("");
+      setWallet((w: any) => ({ ...w, password: hashed, question: securityQuestion.trim(), answer: securityAnswer.trim() }));
       setPasswordError("");
     } catch (err: any) {
       setPasswordError(err.message);
@@ -360,6 +376,8 @@ export default function WalletPage() {
             </div>
     <div className="w-full mx-5 p-4">
      
+      {/* Forgot Password Flow */}
+     
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-4xl yatra-one-text text-purple font-bold">Wallet</h1>
         {!showPasswordPrompt  && !showSetPassword && (
@@ -440,19 +458,43 @@ export default function WalletPage() {
          </button>
        </div>
    
-       <button
-         className="bg-purple text-white font-semibold text-lg w-full py-3 rounded-md hover:bg-purple-attention transition disabled:opacity-50 disabled:cursor-not-allowed"
-         onClick={handleSetPassword}
-         disabled={actionLoading || !passwordInput}
-       >
-         Set Password
-       </button>
-   
-       {passwordError && <div className="text-red mt-3 text-center text-base">{passwordError}</div>}
-   
-       <div className="text-xs text-gray-500 mt-4 text-center">
-         Password must be at least 8 characters and include a number and a letter.
-       </div>
+      {/* Security Question */}
+      <div className="mb-3">
+        <label className="block text-sm font-medium mb-1">Security Question</label>
+        <input
+          type="text"
+          className="w-full border border-gray-input-border bg-gray-input text-heading px-3 py-2 rounded mb-2"
+          value={securityQuestion}
+          onChange={e => setSecurityQuestion(e.target.value)}
+          placeholder="e.g. What is your favorite color?"
+          disabled={actionLoading}
+        />
+      </div>
+      {/* Security Answer */}
+      <div className="mb-5">
+        <label className="block text-sm font-medium mb-1">Answer</label>
+        <input
+          type="text"
+          className="w-full border border-gray-input-border bg-gray-input text-heading px-3 py-2 rounded mb-2"
+          value={securityAnswer}
+          onChange={e => setSecurityAnswer(e.target.value)}
+          placeholder="Enter answer"
+          disabled={actionLoading}
+        />
+      </div>
+      <button
+        className="bg-purple text-white font-semibold text-lg w-full py-3 rounded-md hover:bg-purple-attention transition disabled:opacity-50 disabled:cursor-not-allowed"
+        onClick={handleSetPassword}
+        disabled={actionLoading || !passwordInput}
+      >
+        Set Password
+      </button>
+
+      {passwordError && <div className="text-red mt-3 text-center text-base">{passwordError}</div>}
+
+      <div className="text-xs text-gray-500 mt-4 text-center">
+        Password must be at least 8 characters and include a number and a letter.
+      </div>
      </div>
    
      {/* Right: Illustration */}
@@ -466,7 +508,7 @@ export default function WalletPage() {
    
      
       )}
-      {wallet && showPasswordPrompt && !showSetPassword && (
+      {wallet && showPasswordPrompt && !showSetPassword && !showForgotPassword && (
         
 
 <div className="min-h-[85vh]  flex items-center justify-center">
@@ -495,7 +537,9 @@ export default function WalletPage() {
           {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
         </button>
       </div>
+    <div className="w-full flex justify-between">
 
+   
       <button
         className="bg-purple-attention text-white font-semibold text-base px-5 py-2.5 rounded-md hover:bg-purple-attention transition disabled:opacity-50 disabled:cursor-not-allowed"
         onClick={handlePasswordSubmit}
@@ -504,7 +548,30 @@ export default function WalletPage() {
         Unlock Wallet
       </button>
 
+      
+      <div className="mt-4 text-center">
+        <button
+          type="button"
+          className="text-purple underline text-sm hover:text-purple-attention"
+          onClick={() => {
+            console.log('Updating password for userId:', userId);
+            setShowForgotPassword(true);
+            setForgotAnswerInput("");
+            setForgotAnswerCorrect(false);
+            setNewPasswordInput("");
+            setForgotPwError("");
+            setNewPasswordError("");
+            setSecurityQuestion(wallet?.question || "");
+            setSecurityAnswer(wallet?.answer || "");
+          }}
+        >
+          Forgot Password?
+        </button>
+      </div>
+
+      </div>
       {passwordError && <div className="text-red mt-3 text-base">{passwordError}</div>}
+
     </div>
 
     {/* Right: Illustration */}
@@ -516,6 +583,93 @@ export default function WalletPage() {
 
 
 
+      )}
+       {showForgotPassword && (
+        <div className="mb-8 p-6 border border-purple rounded-xl bg-purple-attention/10 max-w-lg mx-auto flex flex-col gap-4">
+          <h2 className="text-xl font-bold text-purple mb-2">Reset Wallet Password</h2>
+          <div className="mb-2">
+            <span className="font-medium">Security Question:</span>
+            <span className="ml-2">{securityQuestion || 'No question set.'}</span>
+          </div>
+          <input
+            type="text"
+            className="w-full border border-gray-input-border bg-gray-input text-heading px-3 py-2 rounded mb-2"
+            value={forgotAnswerInput}
+            onChange={e => {
+              setForgotAnswerInput(e.target.value);
+              setForgotPwError("");
+            }}
+            placeholder="Enter your answer"
+          />
+          {forgotPwError && (
+            <div className="text-red-600 text-sm mb-2">{forgotPwError}</div>
+          )}
+          <button
+            className="bg-purple-attention text-white font-semibold text-base px-5 py-2.5 rounded-md hover:bg-purple-attention transition disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => {
+              if (forgotAnswerInput.trim().toLowerCase() === securityAnswer.trim().toLowerCase()) {
+                setForgotAnswerCorrect(true);
+                setForgotPwError("");
+              } else {
+                setForgotAnswerCorrect(false);
+                setForgotPwError("Incorrect answer. Please try again.");
+              }
+            }}
+          >
+            Verify Answer
+          </button>
+          <div className={forgotAnswerCorrect ? "mt-4" : "mt-4 hidden"}>
+            <label className="block text-sm font-medium mb-1">New Password</label>
+            <div className="relative flex items-center">
+              <input
+                type={showPassword ? "text" : "password"}
+                className="w-full border border-gray-input-border bg-gray-input text-heading px-3 py-2 rounded mb-2 pr-10"
+                value={newPasswordInput}
+                onChange={e => setNewPasswordInput(e.target.value)}
+                placeholder="Enter new password"
+              />
+              <button
+                type="button"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-purple"
+                tabIndex={-1}
+                onClick={() => setShowPassword(v => !v)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              </button>
+            </div>
+            {newPasswordError && (
+              <div className="text-red-600 text-sm mb-2">{newPasswordError}</div>
+            )}
+            <button
+              className="bg-purple-attention text-white font-semibold text-base px-5 py-2.5 rounded-md hover:bg-purple-attention transition disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={async () => {
+                if (!isPasswordSafe(newPasswordInput)) {
+                  setNewPasswordError("Password must be at least 8 characters and include a number and a letter.");
+                  return;
+                }
+                try {
+                  const hashed = await hashWalletPassword(newPasswordInput);
+                  const { error } = await supabase
+                    .from("wallets")
+                    .update({ password: hashed })
+                    .eq("user_id", userId);
+                  if (error) throw error;
+                  setNewPasswordError("");
+                  setShowForgotPassword(false);
+                  setForgotAnswerInput("");
+                  setForgotAnswerCorrect(false);
+                  setNewPasswordInput("");
+                  // Optionally show a success message here
+                } catch (err: any) {
+                  setNewPasswordError(err.message || "Failed to update password.");
+                }
+              }}
+            >
+              Change Password
+            </button>
+          </div>
+        </div>
       )}
       {wallet && !showPasswordPrompt && !showSetPassword && (
        <>
