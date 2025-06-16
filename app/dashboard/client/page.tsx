@@ -259,30 +259,44 @@ const [deleting, setDeleting] = useState(false);
                     </button>
                </div>
 
-                {jobToDelete && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-      <h2 className="text-lg font-bold text-red-600 mb-2">Delete Job</h2>
-      <p className="text-sm text-gray-700 mb-4">
-        This action is permanent. To confirm deletion of{' '}
-        <span className="font-semibold">{jobToDelete.title}</span>, type the job title below:
+               {jobToDelete && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div className="bg-white border border-purple-attention shadow-2xl rounded-2xl p-6 w-full max-w-xl animate-fade-in relative">
+      
+      {/* Close Button */}
+      <button
+        type="button"
+        className="absolute top-3 right-3 text-purple-attention hover:text-purple text-2xl font-bold"
+        onClick={() => {
+          setJobToDelete(null);
+          setConfirmInput('');
+        }}
+      >
+        &times;
+      </button>
+
+      <h2 className="text-2xl font-bold text-purple-attention mb-4">Delete Job</h2>
+
+      <p className="text-gray-700 text-sm mb-4">
+        This action is <span className="text-red-600 font-semibold">permanent</span>. To confirm deletion of{' '}
+        <span className="font-medium text-gray-800">{jobToDelete.title}</span>, type the job title below:
       </p>
 
       <input
         type="text"
-        className="w-full border px-3 py-2 rounded mb-4"
+        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-attention mb-4"
         placeholder="Type job title to confirm"
         value={confirmInput}
         onChange={(e) => setConfirmInput(e.target.value)}
       />
 
-      <div className="flex justify-between">
+      <div className="flex justify-end gap-4">
         <button
           onClick={() => {
             setJobToDelete(null);
             setConfirmInput('');
           }}
-          className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 text-sm"
+          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 text-sm font-medium"
         >
           Cancel
         </button>
@@ -290,10 +304,10 @@ const [deleting, setDeleting] = useState(false);
         <button
           onClick={handleDeleteConfirm}
           disabled={confirmInput !== jobToDelete.title || deleting}
-          className={`px-4 py-2 rounded text-white text-sm ${
-            confirmInput === jobToDelete.title
-              ? 'bg-red-600 hover:bg-red-700'
-              : 'bg-red-300 cursor-not-allowed'
+          className={`px-4 py-2 text-sm font-medium rounded-lg text-white transition ${
+            confirmInput === jobToDelete.title && !deleting
+              ? 'bg-purple-attention hover:bg-purple'
+              : 'bg-purple-200 cursor-not-allowed'
           }`}
         >
           {deleting ? 'Deleting...' : 'Confirm Delete'}
@@ -302,6 +316,7 @@ const [deleting, setDeleting] = useState(false);
     </div>
   </div>
 )}
+
 
 
                 {isJobOpen && (
