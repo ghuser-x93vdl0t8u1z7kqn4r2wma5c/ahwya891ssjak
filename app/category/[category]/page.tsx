@@ -101,7 +101,7 @@ export default function CategoryPage() {
             <h1 className="text-4xl yatra-one-text font-extrabold text-purple-attention uppercase">
               {category}
             </h1>
-            <Link href="/category" className="flex items-center gap-2 text-purple hover:underline">
+            <Link href="/" className="flex items-center gap-2 text-purple hover:underline">
               <ArrowLeft className="w-5 h-5" />
               <span className="font-medium">Back to Categories</span>
             </Link>
