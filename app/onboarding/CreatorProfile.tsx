@@ -218,13 +218,6 @@ export default function CreatorProfile({ onNext, onBack }: CreatorProfileProps) 
       !hourlyRateError &&  // Make sure there's no error
       formData.niche !== '' &&
       formData.team_size !== '';
-    console.log('Step 1 validation:', {
-      hourlyRate: formData.hourly_rate,
-      hourlyRateError,
-      niche: formData.niche,
-      teamSize: formData.team_size,
-      isValid: valid
-    });
     return valid;
   };
 
@@ -242,12 +235,9 @@ export default function CreatorProfile({ onNext, onBack }: CreatorProfileProps) 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', { step, formData, isStepOneValid: isStepOneValid() });
     if (step === 1 && isStepOneValid()) {
-      console.log('Moving to step 2');
       setStep(2);
     } else if (step === 2 && isStepTwoValid()) {
-      console.log('Submitting form');
       onNext({ ...formData, account_type: 'creator' });
     }
   };

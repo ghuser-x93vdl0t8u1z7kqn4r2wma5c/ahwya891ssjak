@@ -554,7 +554,6 @@ export default function WalletPage() {
           type="button"
           className="text-purple underline text-sm hover:text-purple-attention"
           onClick={() => {
-            console.log('Updating password for userId:', userId);
             setShowForgotPassword(true);
             setForgotAnswerInput("");
             setForgotAnswerCorrect(false);

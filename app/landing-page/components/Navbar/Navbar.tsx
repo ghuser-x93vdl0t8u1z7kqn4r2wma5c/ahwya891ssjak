@@ -14,10 +14,29 @@ export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  {/* Check session expiry to be deleted */}
+  useEffect(() => {
+    const checkSessionExpiry = async () => {
+      const sessionResponse = await supabase.auth.getSession();
+  
+      if (sessionResponse.data.session) {
+        const accessToken = sessionResponse.data.session.access_token;
+        const payload = JSON.parse(atob(accessToken.split('.')[1]));
+        console.log('Token expires at (unix):', payload.exp);
+        console.log('Expires at (date):', new Date(payload.exp * 1000));
+      } else {
+        console.log('No active session found.');
+      }
+    };
+  
+    checkSessionExpiry();
+  }, []);
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
+        
         
         if (session?.user) {
           // Fetch user profile data
