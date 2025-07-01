@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Yatra_One } from 'next/font/google';
 import { Geist, Geist_Mono } from "next/font/google";
+import { Providers } from './providers';
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,7 +28,6 @@ export const metadata: Metadata = {
     icon: '/favicon1.ico', // path to your favicon
   },
 };
-
 export default function RootLayout({
   children,
 }: {
@@ -36,7 +36,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${yatraOne.variable} antialiased`}>
       <body>
-        {children}
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

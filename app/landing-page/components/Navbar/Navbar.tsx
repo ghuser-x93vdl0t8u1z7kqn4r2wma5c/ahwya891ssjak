@@ -1,4 +1,5 @@
-"use client"
+/*eslint-disable */
+"use client";
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/app/lib/supabase';
@@ -14,32 +15,39 @@ export default function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  {/* Check session expiry to be deleted */}
+  // DEBUG: Check session expiration
   useEffect(() => {
     const checkSessionExpiry = async () => {
+      console.log('[DEBUG] Checking session expiry...');
       const sessionResponse = await supabase.auth.getSession();
-  
+
       if (sessionResponse.data.session) {
         const accessToken = sessionResponse.data.session.access_token;
         const payload = JSON.parse(atob(accessToken.split('.')[1]));
-        console.log('Token expires at (unix):', payload.exp);
-        console.log('Expires at (date):', new Date(payload.exp * 1000));
+        console.log('[DEBUG] Token expires at (unix):', payload.exp);
+        console.log('[DEBUG] Token expires at (date):', new Date(payload.exp * 1000));
       } else {
-        console.log('No active session found.');
+        console.log('[DEBUG] No active session found (initial check).');
       }
     };
-  
+
     checkSessionExpiry();
   }, []);
 
+  // DEBUG: Load user
   useEffect(() => {
     const fetchUser = async () => {
+      console.log('[DEBUG] Attempting to fetch session...');
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+        if (sessionError) {
+          console.error('[ERROR] Session fetch error:', sessionError.message);
+        }
+
         if (session?.user) {
-          // Fetch user profile data
+          console.log('[DEBUG] Session user found:', session.user.id);
+
           const { data: userData, error } = await supabase
             .from('users')
             .select('username, profile_picture_url')
@@ -47,41 +55,57 @@ export default function Navbar() {
             .single();
 
           if (!error && userData) {
+            console.log('[DEBUG] User data loaded:', userData);
             setUser(userData);
+          } else {
+            console.error('[ERROR] Failed to fetch user data:', error?.message || 'Unknown error');
           }
+        } else {
+          console.warn('[DEBUG] No session.user found.');
         }
       } catch (error) {
-        console.error('Error fetching user:', error);
+        console.error('[ERROR] Unexpected error during fetchUser:', error);
       } finally {
+        console.log('[DEBUG] Loading complete.');
         setLoading(false);
       }
     };
 
     fetchUser();
 
-    // Subscribe to auth changes
+    // DEBUG: Auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('[DEBUG] Auth event:', event);
+
       if (event === 'SIGNED_IN' && session) {
-        const { data: userData } = await supabase
+        console.log('[DEBUG] User signed in:', session.user.id);
+
+        const { data: userData, error } = await supabase
           .from('users')
           .select('username, profile_picture_url')
           .eq('id', session.user.id)
           .single();
 
         if (userData) {
+          console.log('[DEBUG] User data (SIGNED_IN):', userData);
           setUser(userData);
+        } else {
+          console.error('[ERROR] Failed to fetch user after SIGNED_IN:', error?.message || 'Unknown error');
         }
       } else if (event === 'SIGNED_OUT') {
+        console.log('[DEBUG] User signed out.');
         setUser(null);
       }
     });
 
     return () => {
+      console.log('[DEBUG] Cleaning up auth listener.');
       subscription.unsubscribe();
     };
   }, []);
 
   const handleLogout = async () => {
+    console.log('[DEBUG] Logging out...');
     await supabase.auth.signOut();
     setUser(null);
     setIsDropdownOpen(false);

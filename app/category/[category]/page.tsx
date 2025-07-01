@@ -2,7 +2,9 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'next/navigation';
-import { supabase } from '@/app/lib/supabase';
+import { supabase } from '@/app/lib/supabase-browser';
+import { useSession } from '@supabase/auth-helpers-react';
+
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 
@@ -21,11 +23,19 @@ export default function CategoryPage() {
   const rawCategory = params.category as string;
   const category = useMemo(() => rawCategory.replace(/-/g, ' ').toLowerCase(), [rawCategory]);
 
+  const session = useSession();
+
   const [freelancers, setFreelancers] = useState<Freelancer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!session) {
+      setFreelancers([]);
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -58,7 +68,15 @@ export default function CategoryPage() {
     };
 
     fetchFreelancers();
-  }, [category]);
+  }, [category, session]);
+
+  if (!session) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-green-light">
+        <p className="text-gray-600 text-lg">Please log in to view freelancers.</p>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -88,7 +106,7 @@ export default function CategoryPage() {
   if (error) {
     return (
       <div className="min-h-screen bg-green-light flex items-center justify-center">
-        <p className="text-red text-lg font-semibold">{error}</p>
+        <p className="text-red-600 text-lg font-semibold">{error}</p>
       </div>
     );
   }
