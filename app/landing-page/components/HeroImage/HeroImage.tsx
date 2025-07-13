@@ -23,7 +23,7 @@ export default function HeroImage() {
               </button>
               </Link>
             </div>
-            <div>
+            <div className="hidden">
               <p className="text-[#667085] text-sm mb-4">Trusted by</p>
               <div className="flex items-center gap-8">
                 <img src="/microsoft.svg" alt="Microsoft Logo" className="h-7" />
