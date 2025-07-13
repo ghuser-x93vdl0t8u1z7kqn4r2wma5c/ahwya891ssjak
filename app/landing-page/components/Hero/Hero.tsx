@@ -28,7 +28,7 @@ export default function Hero() {
               </Link>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 hidden">
               <p className="text-body">Trusted by</p>
               <div className="flex items-center gap-8">
                 <Image
