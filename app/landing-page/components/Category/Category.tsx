@@ -103,8 +103,8 @@ export default function Category() {
             <h1 className="yatra-one-text text-[2.75rem] md:text-[3.25rem] leading-[1.1] text-black whitespace-pre-line">
               Browse talent by category
             </h1>
-            <p className="text-color-text">
-              Looking for work? <Link href="/browse-jobs" className="text-purple-attention hover:text-purple">Browse jobs</Link>
+            <p className="text-color-text hidden">
+              Looking for work? <Link href="/" className="text-purple-attention hover:text-purple">Browse jobs</Link>
             </p>
           </div>
 
